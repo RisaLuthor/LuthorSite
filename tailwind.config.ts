@@ -11,7 +11,6 @@ export default {
         sm: ".1875rem", /* 3px */
       },
       colors: {
-        // Flat / base colors (regular buttons)
         background: "hsl(var(--background) / <alpha-value>)",
         foreground: "hsl(var(--foreground) / <alpha-value>)",
         border: "hsl(var(--border) / <alpha-value>)",
@@ -81,11 +80,18 @@ export default {
           busy: "rgb(239 68 68)",
           offline: "rgb(156 163 175)",
         },
+        neon: {
+          cyan: "hsl(var(--neon-cyan) / <alpha-value>)",
+          blue: "hsl(var(--neon-blue) / <alpha-value>)",
+          glow: "hsl(var(--neon-glow) / <alpha-value>)",
+        },
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
         serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],
+        display: ["var(--font-display)"],
+        heading: ["var(--font-heading)"],
       },
       keyframes: {
         "accordion-down": {
@@ -96,10 +102,35 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.7" },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "grid-fade": {
+          "0%": { opacity: "0.3" },
+          "50%": { opacity: "0.6" },
+          "100%": { opacity: "0.3" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "float": "float 6s ease-in-out infinite",
+        "grid-fade": "grid-fade 4s ease-in-out infinite",
+      },
+      boxShadow: {
+        "neon": "0 0 5px hsl(var(--neon-cyan)), 0 0 20px hsl(var(--neon-cyan) / 0.5), 0 0 40px hsl(var(--neon-cyan) / 0.3)",
+        "neon-lg": "0 0 10px hsl(var(--neon-cyan)), 0 0 40px hsl(var(--neon-cyan) / 0.6), 0 0 80px hsl(var(--neon-cyan) / 0.4)",
+        "neon-text": "0 0 10px hsl(var(--neon-cyan)), 0 0 20px hsl(var(--neon-cyan)), 0 0 40px hsl(var(--neon-cyan)), 0 0 80px hsl(var(--neon-cyan))",
+        "glass": "0 8px 32px 0 rgba(0, 0, 0, 0.37)",
+      },
+      backdropBlur: {
+        glass: "12px",
       },
     },
   },

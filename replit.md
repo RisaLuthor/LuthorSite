@@ -1,0 +1,126 @@
+# RMLuthor.us - The Luthor.Tech AI Ecosystem Core
+
+## Overview
+
+RMLuthor.us is a futuristic personal portfolio and AI ecosystem website featuring a custom cyberpunk aesthetic. The application showcases AI architecture, security innovations, and various tech projects through an immersive, visually-driven interface. Built as a full-stack TypeScript application with React frontend and Express backend, it includes an interactive chat system, project showcase, games catalog, blog section, and contact functionality.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+
+**Framework**: React 18 with TypeScript, using Vite as the build tool and development server.
+
+**Routing**: Wouter for lightweight client-side routing with support for five main pages: Home, Projects, Games, Blog, and Contact.
+
+**UI Component Library**: shadcn/ui built on Radix UI primitives, providing accessible, customizable components with consistent styling. Components use a "new-york" style variant with custom cyberpunk theming.
+
+**Styling System**: 
+- Tailwind CSS with custom configuration for the futuristic/cyberpunk aesthetic
+- CSS custom properties for theme variables (HSL color format)
+- Dual theme support (light/dark mode) with theme toggle functionality
+- Custom neon glow effects using text-shadow and box-shadow
+- Typography: Orbitron/Rajdhani for headings, Inter/IBM Plex Sans for body text
+- Animated backgrounds with geometric patterns, grids, and particle effects
+
+**State Management**: 
+- TanStack Query (React Query) for server state management with custom query client configuration
+- React Context for theme management (ThemeProvider)
+- React Hook Form with Zod validation for form handling
+
+**Design Pattern**: Component-based architecture with clear separation between page components, reusable UI components, and business logic. Custom hooks (use-mobile, use-toast) for shared functionality.
+
+### Backend Architecture
+
+**Server Framework**: Express.js running on Node.js with TypeScript.
+
+**API Design**: RESTful API with JSON responses, currently implementing chat message endpoints:
+- GET /api/chat/messages - Retrieve all chat messages
+- POST /api/chat/messages - Create new chat message with AI response
+- DELETE /api/chat/messages - Clear chat history
+
+**Storage Layer**: Abstracted storage interface (IStorage) with in-memory implementation (MemStorage). This allows for easy database integration later while providing immediate functionality for development.
+
+**Request Handling**: 
+- Express middleware for JSON parsing with raw body preservation (for webhook verification)
+- Request logging middleware tracking method, path, status, duration
+- Error handling through custom response structures
+
+**Development Mode**: Vite middleware integration for hot module replacement during development, with SSR-style HTML template injection.
+
+**Build Process**: Custom build script using esbuild for server bundling and Vite for client bundling. Server dependencies are selectively bundled (allowlist) to reduce cold start times.
+
+### Database Schema
+
+**ORM**: Drizzle ORM configured for PostgreSQL with schema-first approach.
+
+**Tables**:
+- `users`: User authentication with id, username, password
+- `chat_messages`: Chat history with id, content, role (user/assistant), banterMode, webMode flags
+
+**Schema Validation**: Zod schemas generated from Drizzle table definitions for runtime validation, ensuring type safety across the stack.
+
+**Migration Strategy**: Drizzle Kit for schema migrations with push-based deployment to Neon PostgreSQL (based on configuration).
+
+### Authentication & Authorization
+
+No authentication currently implemented. The storage layer includes user-related methods (getUser, createUser) suggesting future authentication features, but endpoints are currently open.
+
+### Styling & Theme System
+
+**Color System**: HSL-based color variables with semantic naming (primary, secondary, muted, accent, destructive). Custom neon colors (cyan, blue) for cyberpunk aesthetic.
+
+**Component Variants**: Class Variance Authority (CVA) for managing component style variants with type safety.
+
+**Responsive Design**: Mobile-first approach with breakpoints handled through Tailwind utilities and custom useIsMobile hook.
+
+**Animations**: Custom CSS animations (pulse-glow, float) combined with Tailwind animation utilities for dynamic visual effects.
+
+## External Dependencies
+
+### Third-Party UI Libraries
+- **Radix UI**: Comprehensive set of unstyled, accessible UI primitives (@radix-ui/react-*)
+- **shadcn/ui**: Pre-built component library using Radix primitives with Tailwind styling
+- **Lucide React**: Icon library for consistent iconography
+- **cmdk**: Command menu component for potential future search/command functionality
+
+### Database & ORM
+- **Neon Serverless**: PostgreSQL database provider with serverless architecture (@neondatabase/serverless)
+- **Drizzle ORM**: TypeScript ORM for database operations with schema generation
+- **Drizzle Zod**: Integration between Drizzle schemas and Zod validation
+
+### Form & Validation
+- **React Hook Form**: Performant form state management with minimal re-renders
+- **Zod**: TypeScript-first schema validation library
+- **@hookform/resolvers**: Integration between React Hook Form and validation libraries
+
+### State Management
+- **TanStack Query**: Server state management with caching, background updates, and request deduplication
+
+### Development Tools
+- **Vite**: Fast build tool and development server with HMR
+- **esbuild**: JavaScript bundler for production server builds
+- **TypeScript**: Static type checking across the entire codebase
+- **Replit Plugins**: Development environment enhancements (@replit/vite-plugin-*)
+
+### Utility Libraries
+- **date-fns**: Modern date manipulation library
+- **nanoid**: Unique ID generation
+- **clsx & tailwind-merge**: Utility for conditional CSS class composition
+- **class-variance-authority**: Type-safe component variants
+
+### Potential Future Integrations
+Based on build script allowlist, the application is configured to support:
+- Session management (express-session, connect-pg-simple, memorystore)
+- Authentication (passport, passport-local, jsonwebtoken)
+- File uploads (multer)
+- Email (nodemailer)
+- Payment processing (stripe)
+- AI services (openai, @google/generative-ai)
+- WebSockets (ws)
+- Spreadsheet handling (xlsx)
+- Rate limiting (express-rate-limit)
+- CORS handling (cors)
