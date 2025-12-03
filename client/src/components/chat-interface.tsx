@@ -7,13 +7,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Send, Building2, User, Bot, RefreshCw, LogIn } from "lucide-react";
+import { Send, Building2, User, Bot, RefreshCw, LogIn, AlertCircle } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import type { ChatMessage, User as UserType } from "@shared/schema";
 
 export function ChatInterface() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { toast } = useToast();
   const [inputValue, setInputValue] = useState("");
   const [selectedUserType, setSelectedUserType] = useState<"personal" | "enterprise">("personal");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -40,6 +42,13 @@ export function ChatInterface() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
     },
+    onError: () => {
+      toast({
+        title: "Failed to send message",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    },
   });
 
   const clearMessagesMutation = useMutation({
@@ -49,6 +58,10 @@ export function ChatInterface() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
+      toast({
+        title: "Chat cleared",
+        description: "Your conversation history has been cleared",
+      });
     },
   });
 
@@ -59,6 +72,17 @@ export function ChatInterface() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "User type updated",
+        description: "Your preference has been saved",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Failed to update user type",
+        description: "Your preference couldn't be saved. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
