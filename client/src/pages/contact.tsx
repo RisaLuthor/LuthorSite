@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, MapPin, Phone, Send } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { Mail, MapPin, Phone, Send, Loader2 } from "lucide-react";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -34,12 +35,29 @@ export default function Contact() {
     },
   });
 
+  const submitMutation = useMutation({
+    mutationFn: async (data: ContactFormData) => {
+      const response = await apiRequest("POST", "/api/contact", data);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Message Sent",
+        description: data.message || "Thank you for reaching out. We'll get back to you soon.",
+      });
+      form.reset();
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: ContactFormData) => {
-    toast({
-      title: "Message Sent",
-      description: "Thank you for reaching out. We'll get back to you soon.",
-    });
-    form.reset();
+    submitMutation.mutate(data);
   };
 
   return (
@@ -160,13 +178,23 @@ export default function Contact() {
                       <Button
                         type="submit"
                         className="w-full sm:w-auto"
+                        disabled={submitMutation.isPending}
                         style={{
                           boxShadow: "0 0 15px hsl(187 100% 50% / 0.3)",
                         }}
                         data-testid="button-contact-submit"
                       >
-                        <Send className="w-4 h-4 mr-2" />
-                        Send Message
+                        {submitMutation.isPending ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4 mr-2" />
+                            Send Message
+                          </>
+                        )}
                       </Button>
                     </form>
                   </Form>

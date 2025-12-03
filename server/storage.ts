@@ -1,4 +1,11 @@
-import { type User, type InsertUser, type ChatMessage, type InsertChatMessage } from "@shared/schema";
+import { 
+  type User, 
+  type InsertUser, 
+  type ChatMessage, 
+  type InsertChatMessage,
+  type ContactSubmission,
+  type InsertContactSubmission
+} from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -8,15 +15,19 @@ export interface IStorage {
   getChatMessages(): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   clearChatMessages(): Promise<void>;
+  createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission>;
+  getContactSubmissions(): Promise<ContactSubmission[]>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private chatMessages: Map<string, ChatMessage>;
+  private contactSubmissions: Map<string, ContactSubmission>;
 
   constructor() {
     this.users = new Map();
     this.chatMessages = new Map();
+    this.contactSubmissions = new Map();
     
     const initialMessage: ChatMessage = {
       id: randomUUID(),
@@ -52,8 +63,9 @@ export class MemStorage implements IStorage {
   async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
     const id = randomUUID();
     const message: ChatMessage = { 
-      ...insertMessage, 
       id,
+      content: insertMessage.content,
+      role: insertMessage.role as "user" | "assistant",
       banterMode: insertMessage.banterMode ?? false,
       webMode: insertMessage.webMode ?? true,
     };
@@ -71,6 +83,21 @@ export class MemStorage implements IStorage {
       webMode: true,
     };
     this.chatMessages.set(initialMessage.id, initialMessage);
+  }
+
+  async createContactSubmission(insertSubmission: InsertContactSubmission): Promise<ContactSubmission> {
+    const id = randomUUID();
+    const submission: ContactSubmission = {
+      ...insertSubmission,
+      id,
+      createdAt: new Date(),
+    };
+    this.contactSubmissions.set(id, submission);
+    return submission;
+  }
+
+  async getContactSubmissions(): Promise<ContactSubmission[]> {
+    return Array.from(this.contactSubmissions.values());
   }
 }
 

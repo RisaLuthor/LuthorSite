@@ -31,12 +31,12 @@ export function HeroSection() {
         }}
       />
 
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse-glow" />
-      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-neon-blue/5 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: "1s" }} />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-neon-blue/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
 
       <div className="relative z-10 text-center px-4">
         <h1
-          className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-wider mb-6 animate-float"
+          className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-wider mb-6 animate-float animate-text-glow-pulse"
           style={{
             color: "hsl(187 100% 50%)",
             textShadow: `
@@ -53,18 +53,20 @@ export function HeroSection() {
         </h1>
 
         <div
-          className="w-48 sm:w-64 md:w-96 h-0.5 mx-auto mb-6"
+          className="w-48 sm:w-64 md:w-96 h-0.5 mx-auto mb-6 animate-fade-in"
           style={{
             background: "linear-gradient(90deg, transparent, hsl(187 100% 50%), transparent)",
             boxShadow: "0 0 10px hsl(187 100% 50%), 0 0 20px hsl(187 100% 50% / 0.5)",
+            animationDelay: "0.3s",
           }}
         />
 
         <p
-          className="font-heading text-lg sm:text-xl md:text-2xl tracking-widest uppercase"
+          className="font-heading text-lg sm:text-xl md:text-2xl tracking-widest uppercase animate-fade-in-up"
           style={{
             color: "hsl(187 100% 70%)",
             textShadow: "0 0 10px hsl(187 100% 50% / 0.5)",
+            animationDelay: "0.5s",
           }}
           data-testid="text-hero-subtitle"
         >

@@ -9,6 +9,9 @@ import Projects from "@/pages/projects";
 import Games from "@/pages/games";
 import Blog from "@/pages/blog";
 import Contact from "@/pages/contact";
+import FeatureCeFiDeFi from "@/pages/feature-cefi-defi";
+import FeatureAICompanion from "@/pages/feature-ai-companion";
+import FeatureVoiceControl from "@/pages/feature-voice-control";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -19,6 +22,9 @@ function Router() {
       <Route path="/games" component={Games} />
       <Route path="/blog" component={Blog} />
       <Route path="/contact" component={Contact} />
+      <Route path="/features/cefi-defi" component={FeatureCeFiDeFi} />
+      <Route path="/features/ai-companion" component={FeatureAICompanion} />
+      <Route path="/features/voice-control" component={FeatureVoiceControl} />
       <Route component={NotFound} />
     </Switch>
   );
