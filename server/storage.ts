@@ -10,7 +10,7 @@ import {
   type InsertContactSubmission
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -61,7 +61,7 @@ export class DatabaseStorage implements IStorage {
     if (userId) {
       return await db.select().from(chatMessages).where(eq(chatMessages.userId, userId));
     }
-    return await db.select().from(chatMessages);
+    return await db.select().from(chatMessages).where(isNull(chatMessages.userId));
   }
 
   async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
@@ -82,7 +82,7 @@ export class DatabaseStorage implements IStorage {
     if (userId) {
       await db.delete(chatMessages).where(eq(chatMessages.userId, userId));
     } else {
-      await db.delete(chatMessages);
+      await db.delete(chatMessages).where(isNull(chatMessages.userId));
     }
   }
 

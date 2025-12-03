@@ -37,12 +37,18 @@ Preferred communication style: Simple, everyday language.
 
 **Server Framework**: Express.js running on Node.js with TypeScript.
 
-**API Design**: RESTful API with JSON responses, currently implementing chat message endpoints:
-- GET /api/chat/messages - Retrieve all chat messages
+**API Design**: RESTful API with JSON responses:
+- GET /api/auth/user - Get current authenticated user
+- PATCH /api/auth/user/type - Update user's account type (personal/enterprise)
+- GET /api/chat/messages - Retrieve chat messages (scoped to user or anonymous)
 - POST /api/chat/messages - Create new chat message with AI response
 - DELETE /api/chat/messages - Clear chat history
+- POST /api/contact - Submit contact form
+- GET /api/login - Initiate Replit OAuth flow
+- GET /api/callback - Handle OAuth callback
+- GET /api/logout - End user session
 
-**Storage Layer**: Abstracted storage interface (IStorage) with in-memory implementation (MemStorage). This allows for easy database integration later while providing immediate functionality for development.
+**Storage Layer**: DatabaseStorage class with Drizzle ORM backed by Neon PostgreSQL (using HTTP adapter for reliability). Implements IStorage interface for user management, chat messages, and contact submissions.
 
 **Request Handling**: 
 - Express middleware for JSON parsing with raw body preservation (for webhook verification)
@@ -55,19 +61,31 @@ Preferred communication style: Simple, everyday language.
 
 ### Database Schema
 
-**ORM**: Drizzle ORM configured for PostgreSQL with schema-first approach.
+**ORM**: Drizzle ORM configured for PostgreSQL with schema-first approach using Neon HTTP adapter.
 
 **Tables**:
-- `users`: User authentication with id, username, password
-- `chat_messages`: Chat history with id, content, role (user/assistant), banterMode, webMode flags
+- `sessions`: Session storage for Replit Auth with sid, sess (JSONB), and expire columns
+- `users`: User profiles with id, email, firstName, lastName, profileImageUrl, userType (personal/enterprise), timestamps
+- `chat_messages`: Chat history with id, content, role (user/assistant), userType, userId (optional)
+- `contact_submissions`: Contact form entries with id, name, email, subject, message, createdAt
 
 **Schema Validation**: Zod schemas generated from Drizzle table definitions for runtime validation, ensuring type safety across the stack.
 
-**Migration Strategy**: Drizzle Kit for schema migrations with push-based deployment to Neon PostgreSQL (based on configuration).
+**Migration Strategy**: Drizzle Kit for schema migrations with push-based deployment to Neon PostgreSQL.
 
 ### Authentication & Authorization
 
-No authentication currently implemented. The storage layer includes user-related methods (getUser, createUser) suggesting future authentication features, but endpoints are currently open.
+**Authentication**: Replit Auth integration using OpenID Connect (OIDC):
+- OAuth flow via /api/login, /api/callback, /api/logout endpoints
+- Session management with PostgreSQL-backed session store (connect-pg-simple)
+- JWT token handling with automatic refresh
+- User data synced from Replit profile (email, name, avatar)
+
+**User Types**: Two account types that affect AI assistant behavior:
+- Personal: Friendly, casual conversation style for individuals
+- Enterprise: Professional, technical responses for business users
+
+**Authorization**: Protected routes use isAuthenticated middleware that validates session and refreshes tokens as needed.
 
 ### Styling & Theme System
 
