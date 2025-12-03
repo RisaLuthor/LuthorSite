@@ -2,21 +2,27 @@ import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Send, Zap, Globe, MessageSquare, Bot, RefreshCw } from "lucide-react";
+import { Send, Building2, User, Bot, RefreshCw, LogIn } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { ChatMessage } from "@shared/schema";
+import { useAuth } from "@/hooks/useAuth";
+import type { ChatMessage, User as UserType } from "@shared/schema";
 
 export function ChatInterface() {
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [inputValue, setInputValue] = useState("");
-  const [webMode, setWebMode] = useState(true);
-  const [banterMode, setBanterMode] = useState(true);
+  const [selectedUserType, setSelectedUserType] = useState<"personal" | "enterprise">("personal");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (user?.userType) {
+      setSelectedUserType(user.userType);
+    }
+  }, [user]);
 
   const { data: messages = [], isLoading: messagesLoading } = useQuery<ChatMessage[]>({
     queryKey: ["/api/chat/messages"],
@@ -27,8 +33,7 @@ export function ChatInterface() {
       const response = await apiRequest("POST", "/api/chat/messages", {
         content,
         role: "user",
-        banterMode,
-        webMode,
+        userType: isAuthenticated ? user?.userType : selectedUserType,
       });
       return response.json();
     },
@@ -44,6 +49,16 @@ export function ChatInterface() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
+    },
+  });
+
+  const updateUserTypeMutation = useMutation({
+    mutationFn: async (userType: "personal" | "enterprise") => {
+      const response = await apiRequest("PATCH", "/api/auth/user/type", { userType });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
   });
 
@@ -74,6 +89,15 @@ export function ChatInterface() {
     clearMessagesMutation.mutate();
   };
 
+  const handleUserTypeChange = (type: "personal" | "enterprise") => {
+    setSelectedUserType(type);
+    if (isAuthenticated) {
+      updateUserTypeMutation.mutate(type);
+    }
+  };
+
+  const currentUserType = isAuthenticated ? (user?.userType ?? "personal") : selectedUserType;
+
   return (
     <section className="py-16 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -87,10 +111,12 @@ export function ChatInterface() {
               }}
               data-testid="text-chat-title"
             >
-              Kiearan's Demo Assistant
+              Kiearan AI Assistant
             </h2>
             <p className="text-muted-foreground font-heading tracking-wide mb-6" data-testid="text-chat-description">
-              Experience the AI ecosystem in action. Toggle modes and interact with our intelligent assistant.
+              {isAuthenticated 
+                ? `Welcome back! You're chatting as ${currentUserType === "enterprise" ? "an Enterprise" : "a Personal"} user.`
+                : "Select your user type to personalize Kiearan's responses. Log in to save your preference."}
             </p>
 
             <div className="space-y-4">
@@ -102,22 +128,57 @@ export function ChatInterface() {
                 }}
               >
                 <h4 className="font-heading text-sm uppercase tracking-wider text-muted-foreground mb-3">
-                  Ecosystem Features
+                  Select User Type
                 </h4>
-                <ul className="space-y-2 text-sm text-foreground/80">
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Real-time AI processing
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Multi-modal interaction support
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Secure encrypted communications
-                  </li>
-                </ul>
+                
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => handleUserTypeChange("personal")}
+                    className={`flex items-center gap-3 p-3 rounded-md transition-all ${
+                      currentUserType === "personal"
+                        ? "bg-primary/20 border border-primary/50"
+                        : "bg-muted/20 border border-border/30 hover:border-primary/30"
+                    }`}
+                    data-testid="button-user-type-personal"
+                  >
+                    <User className={`w-5 h-5 ${currentUserType === "personal" ? "text-primary" : "text-muted-foreground"}`} />
+                    <div className="text-left">
+                      <p className={`font-medium ${currentUserType === "personal" ? "text-primary" : "text-foreground"}`}>
+                        Personal User
+                      </p>
+                      <p className="text-xs text-muted-foreground">Friendly, casual conversation style</p>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleUserTypeChange("enterprise")}
+                    className={`flex items-center gap-3 p-3 rounded-md transition-all ${
+                      currentUserType === "enterprise"
+                        ? "bg-primary/20 border border-primary/50"
+                        : "bg-muted/20 border border-border/30 hover:border-primary/30"
+                    }`}
+                    data-testid="button-user-type-enterprise"
+                  >
+                    <Building2 className={`w-5 h-5 ${currentUserType === "enterprise" ? "text-primary" : "text-muted-foreground"}`} />
+                    <div className="text-left">
+                      <p className={`font-medium ${currentUserType === "enterprise" ? "text-primary" : "text-foreground"}`}>
+                        Enterprise User
+                      </p>
+                      <p className="text-xs text-muted-foreground">Professional, detailed technical responses</p>
+                    </div>
+                  </button>
+                </div>
+
+                {!isAuthenticated && !authLoading && (
+                  <a
+                    href="/api/login"
+                    className="flex items-center justify-center gap-2 mt-4 p-2 rounded-md bg-primary/10 border border-primary/30 text-primary text-sm hover:bg-primary/20 transition-colors"
+                    data-testid="link-login-chat"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Log in to save your preference
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -141,32 +202,34 @@ export function ChatInterface() {
                     <p className="font-heading font-semibold text-sm" data-testid="text-assistant-name">
                       Kiearan
                     </p>
-                    <p className="text-xs text-muted-foreground">Demo (No-ChatGPT)</p>
+                    <p className="text-xs text-muted-foreground">
+                      {currentUserType === "enterprise" ? "Enterprise Mode" : "Personal Mode"}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-xs font-medium">Web</span>
-                    <Switch
-                      checked={webMode}
-                      onCheckedChange={setWebMode}
-                      className="data-[state=checked]:bg-primary"
-                      data-testid="switch-web-mode"
-                    />
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-xs font-medium">Banter</span>
-                    <Switch
-                      checked={banterMode}
-                      onCheckedChange={setBanterMode}
-                      className="data-[state=checked]:bg-primary"
-                      data-testid="switch-banter-mode"
-                    />
-                  </div>
+                  <Badge
+                    variant="outline"
+                    className={`border-primary/50 ${
+                      currentUserType === "enterprise" 
+                        ? "bg-primary/10 text-primary" 
+                        : "bg-muted/30 text-muted-foreground"
+                    }`}
+                    style={{ boxShadow: currentUserType === "enterprise" ? "0 0 10px hsl(187 100% 50% / 0.2)" : "none" }}
+                  >
+                    {currentUserType === "enterprise" ? (
+                      <>
+                        <Building2 className="w-3 h-3 mr-1" />
+                        Enterprise
+                      </>
+                    ) : (
+                      <>
+                        <User className="w-3 h-3 mr-1" />
+                        Personal
+                      </>
+                    )}
+                  </Badge>
 
                   <Button
                     size="icon"
@@ -180,17 +243,6 @@ export function ChatInterface() {
                   </Button>
                 </div>
               </div>
-              
-              {banterMode && (
-                <Badge
-                  variant="outline"
-                  className="mt-3 w-fit border-primary/50 text-primary bg-primary/5"
-                  style={{ boxShadow: "0 0 10px hsl(187 100% 50% / 0.2)" }}
-                >
-                  <Zap className="w-3 h-3 mr-1" />
-                  NEW Banter Mode
-                </Badge>
-              )}
             </CardHeader>
 
             <CardContent className="p-0">
@@ -204,6 +256,19 @@ export function ChatInterface() {
                     </div>
                   ) : (
                     <>
+                      {messages.length === 0 && (
+                        <div className="flex justify-start">
+                          <div className="max-w-[85%] rounded-md px-4 py-3 bg-muted/50 border border-border/50">
+                            <p className="text-xs font-semibold text-primary mb-1">Kiearan:</p>
+                            <p className="text-sm">
+                              {currentUserType === "enterprise"
+                                ? "Welcome to the Luthor.Tech enterprise consultation. How may I assist your organization today?"
+                                : "Hey there! I'm Kiearan. What would you like to explore in the Luthor.Tech ecosystem?"}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      
                       {messages.map((message) => (
                         <div
                           key={message.id}

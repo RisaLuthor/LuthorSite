@@ -9,6 +9,7 @@ import Projects from "@/pages/projects";
 import Games from "@/pages/games";
 import Blog from "@/pages/blog";
 import Contact from "@/pages/contact";
+import Login from "@/pages/login";
 import FeatureCeFiDeFi from "@/pages/feature-cefi-defi";
 import FeatureAICompanion from "@/pages/feature-ai-companion";
 import FeatureVoiceControl from "@/pages/feature-voice-control";
@@ -18,6 +19,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/login" component={Login} />
       <Route path="/projects" component={Projects} />
       <Route path="/games" component={Games} />
       <Route path="/blog" component={Blog} />
