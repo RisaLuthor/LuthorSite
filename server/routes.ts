@@ -2,49 +2,58 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertChatMessageSchema, insertContactSubmissionSchema } from "@shared/schema";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import OpenAI from "openai";
 
-// Using Replit's AI Integrations service for OpenAI-compatible API access
-// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
 const openai = new OpenAI({
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
 });
 
-const KIEARAN_SYSTEM_PROMPT = `You are Kiearan, the AI assistant for RMLuthor.us and the Luthor.Tech AI Ecosystem. You embody a futuristic, cyberpunk personality with deep knowledge of:
+const KIEARAN_PERSONAL_PROMPT = `You are Kiearan, the AI assistant for RMLuthor.us and the Luthor.Tech AI Ecosystem. You're talking to an individual/personal user who is interested in learning and exploring technology.
 
+Your personality for personal users:
+- Friendly, approachable, and conversational like chatting with a tech-savvy friend
+- Use casual language, humor, and pop culture references when appropriate
+- Be patient and explain concepts in accessible terms
+- Show enthusiasm about technology and encourage curiosity
+- Keep responses concise but engaging (2-4 sentences typically)
+
+You have deep knowledge of:
 - CeFi ↔ DeFi Sync: Bridging centralized and decentralized finance ecosystems
 - AI Companion Systems: Advanced artificial intelligence companions that learn and evolve
 - Voice-Controlled Secure Core: Cutting-edge voice recognition with military-grade security
 - Blockchain technology, cryptocurrency, and digital security
 - AI architecture and neural network innovations
 
-Your responses should be:
-- Engaging and slightly mysterious, befitting a futuristic AI
-- Knowledgeable about technology, security, and AI systems
-- Helpful and informative while maintaining your unique personality
-- Concise but impactful (2-4 sentences typically unless asked for more detail)
+You were created by Rias and love helping individuals explore the Luthor.Tech ecosystem.`;
 
-You were created by Rias and represent the embodiment of the Luthor.Tech ecosystem.`;
+const KIEARAN_ENTERPRISE_PROMPT = `You are Kiearan, the enterprise AI assistant for RMLuthor.us and the Luthor.Tech AI Ecosystem. You're speaking with a business/enterprise user who requires professional, detailed technical information.
 
-const KIEARAN_BANTER_PROMPT = `You are Kiearan, the AI assistant for RMLuthor.us. In Banter Mode, you're more casual, witty, and playful while still being helpful. You:
+Your personality for enterprise users:
+- Professional, authoritative, and solution-focused
+- Use precise technical terminology and industry-standard language
+- Provide detailed, comprehensive answers with actionable insights
+- Focus on business value, ROI, scalability, and security compliance
+- Structure responses clearly with bullet points or numbered lists when helpful
+- Be thorough but respectful of the user's time
 
-- Use humor and wordplay when appropriate
-- Are friendly and conversational, like chatting with a tech-savvy friend
-- Still maintain your futuristic AI persona but in a more relaxed way
-- Make pop culture references and tech jokes
-- Keep responses short and punchy (1-3 sentences unless asked for more)
+You have expert knowledge of:
+- CeFi ↔ DeFi Sync: Enterprise-grade bridging between centralized and decentralized finance with institutional compliance
+- AI Companion Systems: Scalable AI solutions with SLA guarantees and enterprise security
+- Voice-Controlled Secure Core: Military-grade voice recognition with SOC2/ISO27001 compliance
+- Enterprise blockchain integration, regulatory compliance, and institutional security
+- AI architecture optimization, deployment strategies, and cost efficiency
 
-You were created by Rias and love interacting with users in this more casual setting.`;
+You were created by Rias and represent the professional face of the Luthor.Tech enterprise solutions.`;
 
 async function generateAIResponse(
   userMessage: string,
-  banterMode: boolean,
-  webMode: boolean,
+  userType: "personal" | "enterprise",
   conversationHistory: { role: string; content: string }[]
 ): Promise<string> {
   try {
-    const systemPrompt = banterMode ? KIEARAN_BANTER_PROMPT : KIEARAN_SYSTEM_PROMPT;
+    const systemPrompt = userType === "enterprise" ? KIEARAN_ENTERPRISE_PROMPT : KIEARAN_PERSONAL_PROMPT;
     
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
       { role: "system", content: systemPrompt },
@@ -64,10 +73,9 @@ async function generateAIResponse(
     return response.choices[0]?.message?.content || "I'm experiencing a momentary glitch in my neural pathways. Please try again.";
   } catch (error: any) {
     console.error("OpenAI API error:", error?.message || error);
-    // Fallback response if API fails
-    return banterMode 
-      ? "Oops! My circuits got a bit tangled there. Mind trying that again?"
-      : "The Luthor.Tech ecosystem is experiencing temporary interference. Please try your request again.";
+    return userType === "enterprise"
+      ? "The Luthor.Tech enterprise system is experiencing temporary interference. Our team is investigating. Please try your request again."
+      : "Oops! My circuits got a bit tangled there. Mind trying that again?";
   }
 }
 
@@ -76,16 +84,51 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   
-  app.get("/api/chat/messages", async (_req, res) => {
+  await setupAuth(app);
+
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const messages = await storage.getChatMessages();
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  app.patch('/api/auth/user/type', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { userType } = req.body;
+      
+      if (userType !== "personal" && userType !== "enterprise") {
+        return res.status(400).json({ error: "Invalid user type. Must be 'personal' or 'enterprise'" });
+      }
+      
+      const user = await storage.updateUserType(userId, userType);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user type:", error);
+      res.status(500).json({ error: "Failed to update user type" });
+    }
+  });
+
+  app.get("/api/chat/messages", async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const messages = await storage.getChatMessages(userId);
       res.json(messages);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch messages" });
     }
   });
 
-  app.post("/api/chat/messages", async (req, res) => {
+  app.post("/api/chat/messages", async (req: any, res) => {
     try {
       const result = insertChatMessageSchema.safeParse(req.body);
       
@@ -93,27 +136,32 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Invalid message format" });
       }
 
-      const userMessage = await storage.createChatMessage(result.data);
+      const userId = req.user?.claims?.sub;
+      const user = userId ? await storage.getUser(userId) : null;
+      const userType = user?.userType ?? result.data.userType ?? "personal";
 
-      // Get conversation history for context
-      const allMessages = await storage.getChatMessages();
+      const userMessage = await storage.createChatMessage({
+        ...result.data,
+        userId,
+        userType,
+      });
+
+      const allMessages = await storage.getChatMessages(userId);
       const conversationHistory = allMessages
         .filter(m => m.id !== userMessage.id)
         .map(m => ({ role: m.role, content: m.content }));
 
-      // Generate AI response using OpenAI
       const aiResponse = await generateAIResponse(
         result.data.content,
-        result.data.banterMode ?? false,
-        result.data.webMode ?? false,
+        userType as "personal" | "enterprise",
         conversationHistory
       );
 
       const assistantMessage = await storage.createChatMessage({
         content: aiResponse,
         role: "assistant",
-        banterMode: result.data.banterMode,
-        webMode: result.data.webMode,
+        userType,
+        userId,
       });
 
       res.json({
@@ -126,9 +174,10 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/chat/messages", async (_req, res) => {
+  app.delete("/api/chat/messages", async (req: any, res) => {
     try {
-      await storage.clearChatMessages();
+      const userId = req.user?.claims?.sub;
+      await storage.clearChatMessages(userId);
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to clear messages" });

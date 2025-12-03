@@ -1,35 +1,47 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean, timestamp, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Session storage table for Replit Auth
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table for Replit Auth
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  userType: varchar("user_type").$type<"personal" | "enterprise">().default("personal"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
-
-export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 
 export const chatMessages = pgTable("chat_messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   content: text("content").notNull(),
   role: text("role").notNull().$type<"user" | "assistant">(),
-  banterMode: boolean("banter_mode").default(false),
-  webMode: boolean("web_mode").default(true),
+  userType: varchar("user_type").$type<"personal" | "enterprise">().default("personal"),
+  userId: varchar("user_id"),
 });
 
 export const insertChatMessageSchema = createInsertSchema(chatMessages).pick({
   content: true,
   role: true,
-  banterMode: true,
-  webMode: true,
+  userType: true,
+  userId: true,
 }).extend({
   content: z.string().min(1, "Message cannot be empty").max(2000, "Message too long"),
 });
