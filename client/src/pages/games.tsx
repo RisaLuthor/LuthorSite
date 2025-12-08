@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Gamepad2, Play, Star, BookOpen } from "lucide-react";
+import { Link } from "wouter";
 
 const games = [
   {
@@ -38,6 +39,7 @@ const games = [
     rating: 4.6,
     status: "Available",
     icon: BookOpen,
+    path: "/games/galactic-library",
   },
 ];
 
@@ -113,24 +115,33 @@ export default function Games() {
                     {game.description}
                   </p>
 
-                  <Button
-                    className={`w-full ${
-                      game.status === "Coming Soon"
-                        ? "bg-muted text-muted-foreground cursor-not-allowed"
-                        : ""
-                    }`}
-                    disabled={game.status === "Coming Soon"}
-                    data-testid={`button-play-${game.id}`}
-                  >
-                    {game.status === "Coming Soon" ? (
-                      "Coming Soon"
-                    ) : (
-                      <>
+                  {game.path ? (
+                    <Link href={game.path}>
+                      <Button
+                        className="w-full"
+                        data-testid={`button-play-${game.id}`}
+                      >
                         <Play className="w-4 h-4 mr-2" />
                         Play Now
-                      </>
-                    )}
-                  </Button>
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button
+                      className={`w-full ${
+                        game.status === "Coming Soon"
+                          ? "bg-muted text-muted-foreground cursor-not-allowed"
+                          : ""
+                      }`}
+                      disabled={game.status === "Coming Soon" || !game.path}
+                      data-testid={`button-play-${game.id}`}
+                    >
+                      {game.status === "Coming Soon" ? (
+                        "Coming Soon"
+                      ) : (
+                        "Coming Soon"
+                      )}
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ))}
