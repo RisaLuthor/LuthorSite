@@ -3,7 +3,7 @@ import { Footer } from "@/components/footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Gamepad2, Play, Star } from "lucide-react";
+import { Gamepad2, Play, Star, BookOpen } from "lucide-react";
 
 const games = [
   {
@@ -29,6 +29,15 @@ const games = [
     genre: "Adventure",
     rating: 4.7,
     status: "Coming Soon",
+  },
+  {
+    id: "galactic-library",
+    title: "Galactic Library",
+    description: "Collect classic books from across the cosmos and discover unique details, hidden facts, and literary treasures. Build your ultimate library collection while learning fascinating insights about literature's greatest works.",
+    genre: "Collection",
+    rating: 4.6,
+    status: "Available",
+    icon: BookOpen,
   },
 ];
 
@@ -72,7 +81,11 @@ export default function Games() {
                       border: "1px solid hsl(187 100% 50% / 0.2)",
                     }}
                   >
-                    <Gamepad2 className="w-12 h-12 text-primary/40" />
+                    {game.icon ? (
+                      <game.icon className="w-12 h-12 text-primary/40" />
+                    ) : (
+                      <Gamepad2 className="w-12 h-12 text-primary/40" />
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between gap-2 mb-3">

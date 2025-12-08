@@ -2,7 +2,8 @@ import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Github, Lock, Cpu, Shield, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ExternalLink, Github, Lock, Cpu, Shield, Zap, Wrench } from "lucide-react";
 
 const projects = [
   {
@@ -36,6 +37,15 @@ const projects = [
     status: "Research",
     tags: ["Cryptography", "Quantum", "Security"],
     icon: Lock,
+  },
+  {
+    id: "rvfixin",
+    title: "RVFixin.com",
+    description: "A comprehensive RV repair and maintenance resource website that I maintain and manage. Helping RV enthusiasts with troubleshooting guides, repair tutorials, and expert advice.",
+    status: "Active",
+    tags: ["Web Development", "Content Management", "RV Maintenance"],
+    icon: Wrench,
+    url: "https://rvfixin.com",
   },
 ];
 
@@ -109,7 +119,7 @@ export default function Projects() {
                     {project.description}
                   </p>
 
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {project.tags.map((tag) => (
                       <Badge
                         key={tag}
@@ -120,6 +130,19 @@ export default function Projects() {
                       </Badge>
                     ))}
                   </div>
+
+                  {project.url && (
+                    <Button
+                      asChild
+                      className="w-full"
+                      data-testid={`button-visit-${project.id}`}
+                    >
+                      <a href={project.url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Visit Site
+                      </a>
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ))}
