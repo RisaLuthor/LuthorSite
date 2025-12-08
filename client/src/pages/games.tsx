@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Gamepad2, Play, Star, BookOpen } from "lucide-react";
-import { Link } from "wouter";
 
 const games = [
   {
@@ -33,13 +32,13 @@ const games = [
   },
   {
     id: "galactic-library",
-    title: "Galactic Library",
-    description: "Collect classic books from across the cosmos and discover unique details, hidden facts, and literary treasures. Build your ultimate library collection while learning fascinating insights about literature's greatest works.",
-    genre: "Collection",
-    rating: 4.6,
+    title: "Galactic Book Invaders",
+    description: "A Galaga-style arcade game where you collect classic books from across the cosmos! Destroy enemies to collect book pages, unlock achievements, and build your literary collection with 18 classic novels including Pride and Prejudice, Moby Dick, Dracula, and more.",
+    genre: "Arcade",
+    rating: 4.8,
     status: "Available",
     icon: BookOpen,
-    path: "/games/galactic-library",
+    externalPath: "/galactic-book-quest/index.html",
   },
 ];
 
@@ -115,16 +114,17 @@ export default function Games() {
                     {game.description}
                   </p>
 
-                  {game.path ? (
-                    <Link href={game.path}>
-                      <Button
-                        className="w-full"
-                        data-testid={`button-play-${game.id}`}
-                      >
+                  {game.externalPath ? (
+                    <Button
+                      asChild
+                      className="w-full"
+                      data-testid={`button-play-${game.id}`}
+                    >
+                      <a href={game.externalPath}>
                         <Play className="w-4 h-4 mr-2" />
                         Play Now
-                      </Button>
-                    </Link>
+                      </a>
+                    </Button>
                   ) : (
                     <Button
                       className={`w-full ${
@@ -132,13 +132,16 @@ export default function Games() {
                           ? "bg-muted text-muted-foreground cursor-not-allowed"
                           : ""
                       }`}
-                      disabled={game.status === "Coming Soon" || !game.path}
+                      disabled={game.status === "Coming Soon"}
                       data-testid={`button-play-${game.id}`}
                     >
                       {game.status === "Coming Soon" ? (
                         "Coming Soon"
                       ) : (
-                        "Coming Soon"
+                        <>
+                          <Play className="w-4 h-4 mr-2" />
+                          Play Now
+                        </>
                       )}
                     </Button>
                   )}

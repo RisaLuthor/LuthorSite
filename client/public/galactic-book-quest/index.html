@@ -1,0 +1,969 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Galactic Book Invaders — Galaga Edition (Bookverse)</title>
+<style>
+  :root{
+    --bg:#0a0412; --bg2:#120a25; --glass:#100a1d; --glass2:#161129;
+    --ink:#e9e9ee; --muted:#a9a8bb; --line:#2a2141;
+    --purple:#7D3AC1; --electric:#7DF9FF; --sage:#9CAF88;
+    --accent:var(--electric); --accent-2:var(--sage);
+    --wood1:#6b4b2a; --wood2:#3f2c1a;
+  }
+  html,body{
+    height:100%;
+    margin:0;
+    color:var(--ink);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    overflow-x:hidden;
+  }
+  body{
+    background:
+      radial-gradient(1200px 800px at 20% -10%, rgba(125,58,193,.35), transparent 60%),
+      radial-gradient(900px 700px at 85% 15%, rgba(125,249,255,.20), transparent 65%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:20px}
+
+  .topbar{
+    position:sticky; top:0; z-index:9999; pointer-events:auto;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:10px 14px;border:1px solid var(--line);border-radius:14px;
+    background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(0,0,0,.15));
+    box-shadow:0 12px 40px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.03);
+    flex-wrap:wrap;
+  }
+  .play-wrap, .board, .hud, .quote-back { z-index:1; }
+
+  .brand{font-weight:800;letter-spacing:.3px;font-size:20px}
+  .brand .a{background:linear-gradient(90deg,var(--electric),#bfa8ff,var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .chip{border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:rgba(255,255,255,.02);font-size:14px}
+  .chip.badge{border-color:rgba(125,249,255,.35);color:#c8f8ff}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;position:relative}
+  .pill{cursor:pointer;border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:rgba(255,255,255,.02);color:var(--ink);text-decoration:none;display:inline-block}
+  .pill:hover{border-color:var(--accent);box-shadow:0 0 18px rgba(125,58,193,.35)}
+  .stats{display:flex;gap:14px;align-items:center;font-size:14px;flex-wrap:wrap}
+  .stats b{color:var(--accent)}
+  .hearts{letter-spacing:3px}
+
+  .panel{
+    margin:18px auto 0;max-width:1100px;
+    border:1px solid var(--line);border-radius:18px;
+    background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.18));
+    box-shadow:0 20px 60px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.03);
+    padding:22px; position:relative; z-index:15; pointer-events:auto;
+  }
+  h1.title{
+    margin:14px 0 6px;text-align:center;font-size:52px;font-weight:900;
+    background:linear-gradient(90deg,var(--electric),#c2b0ff,var(--purple),#86c09b);
+    -webkit-background-clip:text;background-clip:text;color:transparent
+  }
+  .subtitle{color:var(--muted);text-align:center;margin:0 0 12px}
+  .edition{display:flex;justify-content:center;margin-bottom:8px}
+  .edition .chip{border-color:rgba(125,58,193,.45);color:#e6d7ff}
+  .section{margin:16px 0 8px}
+  .section h3{margin:0 0 8px;text-align:center;color:#d4cdf0;font-weight:700}
+
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .card{
+    border:1px solid var(--line);border-radius:14px;padding:14px 16px;
+    background:linear-gradient(180deg, var(--glass), var(--glass2));
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
+    cursor:pointer;transition:.15s ease;position:relative
+  }
+  .card:hover{border-color:var(--accent);box-shadow:0 0 24px rgba(125,58,193,.35)}
+  .card.selected{outline:2px solid var(--accent);outline-offset:-2px;box-shadow:0 0 24px rgba(125,58,193,.45)}
+  .card .name{font-weight:800;margin-bottom:2px}
+  .card .note{color:var(--muted);font-size:13px}
+
+  .start-row{display:flex;gap:10px;justify-content:center;margin:12px 0 0;flex-wrap:wrap}
+  .start{font-size:16px;padding:10px 18px;border:1px solid var(--accent);
+    background:linear-gradient(180deg, rgba(125,249,255,.12), rgba(125,58,193,.15));
+    color:var(--ink);border-radius:12px;cursor:pointer}
+  .start:hover{box-shadow:0 0 28px rgba(125,249,255,.25)}
+  .start.secondary{border-color:#2a2141;background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.15));}
+
+  .play-wrap{display:none;margin:18px auto 0;max-width:1100px;position:relative;z-index:10}
+  .perimeter{
+    display:grid;grid-template-columns:240px minmax(640px, 900px) 240px;gap:12px;align-items:start;
+  }
+  @media (max-width: 1200px) {
+    .perimeter { grid-template-columns: 1fr; }
+    .side { display: none; }
+  }
+  .side{
+    border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.18));
+    height:600px; overflow-y:auto; box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
+  }
+  .side h4{margin:10px 12px 6px;font-size:14px;color:#d8d2f0}
+  .achlist{padding:0 10px 12px}
+  .achi{
+    border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:8px;background:linear-gradient(180deg,#0f0a1a,#0a0914);
+    font-size:13px
+  }
+  .achi.got{border-color:rgba(125,249,255,.4); box-shadow:0 0 12px rgba(125,249,255,.12)}
+  .achi b{color:var(--accent)}
+  .achi .tiny{color:#a9a8bb;font-size:12px;margin-top:4px;display:block}
+
+  .board-area{display:block}
+  .board{position:relative;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#000;
+         box-shadow:0 16px 40px rgba(0,0,0,.5)}
+  .hud{position:absolute;left:0;top:0;width:100%;padding:6px 10px;font-size:14px;background:rgba(0,0,0,.35);z-index:1;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .buffs{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .badge{border:1px solid var(--line);border-radius:8px;padding:2px 8px;font-size:12px;background:rgba(255,255,255,.05)}
+
+  canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+
+  .quote-back{position:absolute;inset:0;background:rgba(10,10,18,.75);display:none;align-items:center;justify-content:center;z-index:5}
+  .quote-card{max-width:640px;margin:0 12px;padding:20px;border-radius:14px;border:1px solid var(--line);
+              background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25)); text-align:center}
+  .quote-card blockquote{margin:0 0 10px;font-size:20px;line-height:1.6}
+  .quote-card .by{color:#cfcbe9;font-size:14px}
+
+  .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50;pointer-events:auto}
+  .modal{background:#0b0a12;border:1px solid var(--line);border-radius:14px;max-width:860px;width:calc(100% - 24px);padding:18px;
+         box-shadow:0 0 0 2px rgba(125,58,193,.15);max-height:90vh;overflow-y:auto}
+  .modal h2{margin:0 12px 10px;color:var(--accent)}
+  .modal .sub{color:#a9a8bb;margin:0 12px 10px}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .lib{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding:8px 12px 16px}
+  .bk{border:1px solid var(--line);border-radius:12px;padding:10px;background:linear-gradient(180deg,#0f0a1a,#0a0914)}
+  .bk h4{margin:0 0 4px}
+  .bk .tiny{color:#a9a8bb;font-size:12px;margin-bottom:6px}
+  .bk .badge{display:inline-block;margin-top:8px}
+  .list{padding:0 12px 10px}
+  .list .rowline{display:grid;grid-template-columns:1fr auto;gap:8px;padding:6px 0;border-bottom:1px solid #2a2141}
+  .list .rowline:last-child{border-bottom:none}
+
+  .toast{position:fixed;left:50%;top:14px;transform:translateX(-50%);padding:10px 14px;background:#0c0c12;border:1px solid var(--line);
+         border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.4);display:none;z-index:60}
+  .toast strong{color:var(--accent)}
+
+  .shelf-wrap{max-width:1100px;margin:14px auto 0;}
+  .shelf-wrap h3{margin:0 0 8px;text-align:center;color:#e7defc;font-weight:700}
+  .shelf{
+    position:relative;
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(78px,1fr)); gap:10px;
+    align-items:end; padding:12px 12px 22px;
+    border:1px solid var(--line); border-radius:14px;
+    background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.22));
+    box-shadow: inset 0 -8px 0 0 var(--wood2), 0 12px 28px rgba(0,0,0,.25);
+  }
+  .shelf:after{
+    content:""; position:absolute; left:10px; right:10px; bottom:10px; height:8px;
+    background:linear-gradient(180deg,var(--wood1),var(--wood2)); border-radius:6px; opacity:.95;
+  }
+  .slot{position:relative;height:110px;display:flex;align-items:flex-end;justify-content:center}
+  .spine{
+    width:54px; border-radius:6px 6px 0 0;
+    background:linear-gradient(180deg, var(--purple), #351a5a);
+    border:1px solid #2a2141; box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:6px 4px; cursor:pointer;
+  }
+  .spine.done{ background:linear-gradient(180deg, var(--electric), var(--purple)); }
+  .spine .label{font-weight:800;font-size:12px;letter-spacing:.5px;text-align:center}
+  .spine .dots{display:flex;gap:4px;margin-top:6px}
+  .dot{width:6px;height:6px;border-radius:50%;background:#2a2141;box-shadow:0 0 0 1px rgba(255,255,255,.06) inset}
+  .dot.on{background:var(--accent)}
+  .cap{position:absolute;top:-10px;background:#0c0a12;border:1px solid var(--line);border-radius:999px;padding:2px 6px;font-size:12px;transform:translateY(-50%)}
+
+  .theme-wrap{position:relative;display:inline-block}
+  .theme-menu{
+    position:absolute;right:0;top:calc(100% + 6px);min-width:260px;max-height:320px;overflow:auto;display:none;z-index:40;
+    border:1px solid var(--line);border-radius:12px;background:#0b0a12;box-shadow:0 20px 50px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.03);
+  }
+  .theme-item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 10px;border-bottom:1px solid #1f1731;cursor:pointer}
+  .theme-item:last-child{border-bottom:none}
+  .theme-item.locked{opacity:.55;cursor:not-allowed}
+  .theme-colors{display:flex;gap:4px}
+  .sw{width:14px;height:14px;border-radius:50%;border:1px solid rgba(255,255,255,.25)}
+
+  .share-tools{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
+  .share-card{max-width:100%;border:1px solid var(--line);border-radius:12px}
+
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:12px;color:var(--muted)}
+  .field input{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.05);color:var(--ink)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand"><span class="a">Galactic Book Invaders</span></div>
+
+      <div class="actions">
+        <a class="pill" href="/games" id="btnHome" aria-label="Back to Games">Back to Games</a>
+
+        <span class="chip badge" id="modeBadge">Literary Adventure</span>
+
+        <div class="theme-wrap">
+          <button class="pill" type="button" data-action="themes">Themes</button>
+          <div class="theme-menu" id="themeMenu"></div>
+        </div>
+
+        <button class="pill" type="button" data-action="save">Save</button>
+        <button class="pill" type="button" data-action="library">Library</button>
+        <button class="pill" type="button" data-action="ach">Achievements</button>
+        <button class="pill" type="button" data-action="board">Leaderboard</button>
+      </div>
+
+      <div class="stats">
+        <span>Score: <b id="sScore">0</b></span>
+        <span>Wave: <b id="sWave">1</b></span>
+        <span>High: <b id="sHigh">0</b></span>
+        <span>Lives: <span class="hearts" id="sHearts"></span></span>
+      </div>
+    </div>
+
+    <div class="panel" id="menuPanel">
+      <h1 class="title">Galactic Book Invaders</h1>
+      <p class="subtitle">Galaga-style Classic Book Collection</p>
+      <div class="edition"><span class="chip">Bookverse Edition</span></div>
+
+      <div class="section">
+        <h3>Choose Your Hero</h3>
+        <div class="grid">
+          <div class="card selected" id="heroPlayer" data-action="choose-hero" data-hero="Player" tabindex="0" role="button" aria-pressed="true">
+            <div class="name" style="color:var(--electric)">Explorer</div><div class="note">Electric Guardian</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Game Mode</h3>
+        <div class="grid">
+          <div class="card selected" id="modeSolo" data-action="choose-mode" data-mode="solo" tabindex="0" role="button" aria-pressed="true">
+            <div class="name" style="color:#d6b6ff">Solo Adventure</div><div class="note">Galaga formations & swoops</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="start-row">
+        <button class="start" id="btnStart" data-action="start">Start New Game</button>
+        <button class="start secondary" id="btnContinue" data-action="continue" style="display:none">Continue</button>
+      </div>
+    </div>
+
+    <div class="play-wrap" id="playWrap">
+      <div class="perimeter">
+        <aside class="side" id="sideAll">
+          <h4>All Achievements</h4>
+          <div class="achlist" id="achAllList"></div>
+        </aside>
+
+        <div class="board-area">
+          <div class="board">
+            <div class="hud"><span id="hudText">Score: 0 &nbsp; Wave: 1 &nbsp; Lives: 3</span><div class="buffs" id="buffs"></div></div>
+            <div class="quote-back" id="quoteBack">
+              <div class="quote-card">
+                <div class="chip" id="waveTitle">Wave 1</div>
+                <blockquote id="waveQuote">"Between wandering stars we authored a vow, and the ink still burns blue."</blockquote>
+                <div class="by" id="waveBy">— The Astral Library</div>
+                <div class="subtitle" style="margin-top:10px">Press <b>Space</b> or click to begin</div>
+              </div>
+            </div>
+            <canvas id="game" width="900" height="600"></canvas>
+          </div>
+        </div>
+
+        <aside class="side" id="sideDone">
+          <h4>Completed</h4>
+          <div class="achlist" id="achDoneList"></div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="shelf-wrap" id="shelfWrap">
+      <h3>Bookshelf — Your Growing Library</h3>
+      <div class="shelf" id="shelf"></div>
+    </div>
+  </div>
+
+  <div class="modal-back" id="modalBack"><div class="modal" id="modalBody"></div></div>
+  <div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+(() => {
+window.addEventListener('error', (e) => {
+  const box=document.createElement('div');
+  box.style.cssText='position:fixed;bottom:12px;left:12px;right:12px;z-index:999;background:#311;border:1px solid #a33;color:#fee;padding:10px;border-radius:8px;font:12px/1.35 ui-monospace,monospace';
+  box.textContent='JS Error: '+(e.message||e.error);
+  document.body.appendChild(box);
+});
+
+const MILESTONES=[500,1000,2000,3000,5000];
+const BONUS_EVERY=4;
+
+const QUOTES=[
+  ["Between wandering stars we authored a vow, and the ink still burns blue.","— The Astral Library"],
+  ["I found your name pressed like a flower between the pages of night.","— Moonbound Margins"],
+  ["If love is a spell, then I am gladly enchanted and lost.","— Grimoire of Hearts"],
+  ["Two constellations, one story—stitched with silver thread and quiet thunder.","— Atlas of Midnight"],
+  ["Your voice is a candle; my doubts, the moths that yield.","— Nocturne of Ink"],
+  ["We read each other in margins the universe forgot to erase.","— Codex of Dawn"],
+  ["Kiss me where the galaxies fold; let the dark sing back.","— Velvet Epilogue"],
+  ["I carry your chapters under my ribs, turning them with every breath.","— Library of Tide & Flame"],
+  ["Even if the sky blackens, our lantern is language and the wick is us.","— Witchlight Verses"],
+  ["I am ink, you are rain; together we run into meaning.","— The Scribe's Meteor"]
+];
+
+const BOOKS=[ 
+  {id:'md',title:'Moby-Dick',author:'Herman Melville',year:1851,pieces:['Cover','Chapter','Quote'],fact:'A sea captain\'s obsessive hunt for a white whale explores fate, obsession, and the sublime.'},
+  {id:'pnp',title:'Pride and Prejudice',author:'Jane Austen',year:1813,pieces:['Letter','Ball','Cover'],fact:'Elizabeth Bennet matches wits with Mr. Darcy in a sharp comedy of manners and love.'},
+  {id:'drac',title:'Dracula',author:'Bram Stoker',year:1897,pieces:['Cover','Carpathia','Crucifix'],fact:'The archetypal vampire tale—journals and letters chart a creeping, gothic dread.'},
+  {id:'frk',title:'Frankenstein',author:'Mary Shelley',year:1818,pieces:['Cover','Laboratory','Storm'],fact:'A creator confronts his creation: a meditation on responsibility, empathy, and ambition.'},
+  {id:'ody',title:'The Odyssey',author:'Homer',year:'ancient',pieces:['Cover','Sirens','Ithaca'],fact:'An epic voyage of homecoming, monsters, and the craftiness of Odysseus.'},
+  {id:'jey',title:'Jane Eyre',author:'Charlotte Brontë',year:1847,pieces:['Cover','Red Room','Thornfield'],fact:'A fierce governess claims her own voice in love and moral independence.'},
+  {id:'whe',title:'Wuthering Heights',author:'Emily Brontë',year:1847,pieces:['Cover','Moor','Locket'],fact:'Stormy passions haunt the moors in a tale of obsession and inheritance.'},
+  {id:'gg',title:'The Great Gatsby',author:'F. Scott Fitzgerald',year:1925,pieces:['Cover','Green Light','Party'],fact:'Jazz Age glamour veils longing, reinvention, and the cost of the American dream.'},
+  {id:'sl',title:'The Scarlet Letter',author:'Nathaniel Hawthorne',year:1850,pieces:['Cover','A','Scaffold'],fact:'A tale of sin, shame, and resilience set in Puritan New England.'},
+  {id:'tkm',title:'To Kill a Mockingbird',author:'Harper Lee',year:1960,pieces:['Cover','Mockingbird','Trial'],fact:'A child\'s-eye view of justice and empathy in a segregated town.'},
+  {id:'huck',title:'Adventures of Huckleberry Finn',author:'Mark Twain',year:1884,pieces:['Cover','Raft','River'],fact:'A boy and a runaway slave journey the Mississippi in search of freedom.'},
+  {id:'lw',title:'Little Women',author:'Louisa May Alcott',year:1868,pieces:['Cover','March','Piano'],fact:'Four sisters chart their dreams, duties, and joys during the Civil War era.'},
+  {id:'ctr',title:'The Catcher in the Rye',author:'J.D. Salinger',year:1951,pieces:['Cover','Red Cap','Museum'],fact:'Holden wanders New York, chasing authenticity and protection for innocence.'},
+  {id:'im',title:'Invisible Man',author:'Ralph Ellison',year:1952,pieces:['Cover','Basement','Brotherhood'],fact:'A nameless narrator seeks identity amid racism and ideology.'},
+  {id:'bel',title:'Beloved',author:'Toni Morrison',year:1987,pieces:['Cover','124','Rememory'],fact:'A haunted house, a mother\'s love, and the memories that refuse to fade.'},
+  {id:'saf',title:'The Sound and the Fury',author:'William Faulkner',year:1929,pieces:['Cover','Compson','Benjy'],fact:'A fractured Southern family told through shattered time and voice.'},
+  {id:'tewwg',title:'Their Eyes Were Watching God',author:'Zora Neale Hurston',year:1937,pieces:['Cover','Pear Tree','Hurricane'],fact:'Janie\'s odyssey toward love and her own voice in the American South.'},
+  {id:'gow',title:'The Grapes of Wrath',author:'John Steinbeck',year:1939,pieces:['Cover','Route 66','Turtle'],fact:'Dust Bowl migrants chase survival and dignity on the road west.'}
+];
+const BOOK_MAP = Object.fromEntries(BOOKS.map(b=>[b.id,b]));
+const BOOK_PIECES_MAP = Object.fromEntries(BOOKS.map(b=>[b.id,new Set(b.pieces)]));
+
+const $=id=>document.getElementById(id);
+const menuPanel=$('menuPanel'), playWrap=$('playWrap');
+const canvas=$('game'), ctx=canvas.getContext('2d'), hudText=$('hudText'), buffs=$('buffs');
+const sScore=$('sScore'), sWave=$('sWave'), sHigh=$('sHigh'), sHearts=$('sHearts'), modeBadge=$('modeBadge');
+const quoteBack=$('quoteBack'), waveTitle=$('waveTitle'), waveQuote=$('waveQuote'), waveBy=$('waveBy');
+const modalBack=$('modalBack'), modalBody=$('modalBody');
+const toast=$('toast');
+const shelf=$('shelf'); const btnContinue=$('btnContinue');
+const achAllList=$('achAllList'), achDoneList=$('achDoneList');
+const themeMenu=$('themeMenu');
+
+canvas.setAttribute('tabindex','0');
+
+const LS_SESS="gbq_sessions_v1";
+const LS_ACH ="gbq_ach_v1";
+const LS_LIB ="gbq_library_v1";
+const LS_SAVE="gbq_save_v1";
+const LS_THEME="gbq_theme_v1";
+
+let currentUser={name:'Player',accent:'#7DF9FF'};
+const pid = () => (currentUser?.name || 'Guest').toLowerCase().replace(/\s+/g,'_');
+const keyFor = (base) => `${base}::${pid()}`;
+
+const loadDB=()=>{ try{const j=JSON.parse(localStorage.getItem(LS_SESS))||{}; return {sessions:j.sessions||[],best:j.best||{}};}catch{return {sessions:[],best:{}};} };
+const saveDB=(db)=>localStorage.setItem(LS_SESS,JSON.stringify(db));
+function pushSession(entry){ const db=loadDB(); db.sessions.push(entry); db.best[entry.player]=Math.max(db.best[entry.player]??0, entry.score); saveDB(db); }
+
+const loadAch=()=>{ try{return JSON.parse(localStorage.getItem(keyFor(LS_ACH)))||{};}catch{return {};} };
+const saveAch=(a)=>localStorage.setItem(keyFor(LS_ACH),JSON.stringify(a));
+
+const loadLib=()=>{ try{const j=JSON.parse(localStorage.getItem(keyFor(LS_LIB)))||{}; return {pages:j.pages||{},completed:j.completed||{}};}catch{return {pages:{},completed:{}};} };
+const saveLib=(lib)=>localStorage.setItem(keyFor(LS_LIB),JSON.stringify(lib));
+
+const loadSave=()=>{ try{return JSON.parse(localStorage.getItem(keyFor(LS_SAVE)))||null;}catch{return null;} };
+const saveSave=(obj)=>localStorage.setItem(keyFor(LS_SAVE),JSON.stringify(obj));
+const clearSave=()=>localStorage.removeItem(keyFor(LS_SAVE));
+
+const loadTheme=()=>{ try{return JSON.parse(localStorage.getItem(keyFor(LS_THEME)))||{id:'default'};}catch{return {id:'default'};} };
+const saveTheme=(obj)=>localStorage.setItem(keyFor(LS_THEME),JSON.stringify(obj));
+
+const THEMES=[ 
+  {id:'default',name:'Starlit Default',req:null,vars:{'--bg':'#0a0412','--bg2':'#120a25','--accent':'#7DF9FF','--accent-2':'#9CAF88','--wood1':'#6b4b2a','--wood2':'#3f2c1a'}},
+  {id:'md',name:'Abyssal Teal — Moby-Dick',req:'md',vars:{'--bg':'#021b26','--bg2':'#022f44','--accent':'#3fe0ff','--accent-2':'#86c09b','--wood1':'#315a66','--wood2':'#20424d'}},
+  {id:'pnp',name:'Regency Sage — Pride & Prejudice',req:'pnp',vars:{'--bg':'#101a14','--bg2':'#0b2315','--accent':'#9CAF88','--accent-2':'#7DF9FF','--wood1':'#4c5a3f','--wood2':'#2f3b27'}},
+  {id:'drac',name:'Gothic Crimson — Dracula',req:'drac',vars:{'--bg':'#14060a','--bg2':'#1e0b12','--accent':'#ff5a6b','--accent-2':'#7D3AC1','--wood1':'#5a2a2f','--wood2':'#3a1a1e'}},
+  {id:'frk',name:'Stormlight Lime — Frankenstein',req:'frk',vars:{'--bg':'#0f1a10','--bg2':'#09120b','--accent':'#b7ff5a','--accent-2':'#7D3AC1','--wood1':'#415234','--wood2':'#2c3a23'}},
+  {id:'ody',name:'Aegean Blue — Odyssey',req:'ody',vars:{'--bg':'#08121f','--bg2':'#0a2340','--accent':'#58b7ff','--accent-2':'#ffd166','--wood1':'#2b4a6b','--wood2':'#1d3147'}},
+  {id:'jey',name:'Thornfield Rose — Jane Eyre',req:'jey',vars:{'--bg':'#1a0e13','--bg2':'#2a1320','--accent':'#ff88b4','--accent-2':'#7D3AC1','--wood1':'#5a2b3d','--wood2':'#3c1c28'}},
+  {id:'whe',name:'Moor Violet — Wuthering Heights',req:'whe',vars:{'--bg':'#110b1a','--bg2':'#1b0f2a','--accent':'#b88cff','--accent-2':'#7DF9FF','--wood1':'#3d2a5a','--wood2':'#271b3a'}},
+  {id:'gg',name:'Jazz Gold — Great Gatsby',req:'gg',vars:{'--bg':'#0e0a12','--bg2':'#1a1220','--accent':'#ffd166','--accent-2':'#7D3AC1','--wood1':'#5a4a2a','--wood2':'#3a2f1c'}},
+  {id:'sl',name:'Crimson Puritan — Scarlet Letter',req:'sl',vars:{'--bg':'#15090b','--bg2':'#2a0f14','--accent':'#d94d59','--accent-2':'#9CAF88','--wood1':'#5a2b31','--wood2':'#37181d'}},
+  {id:'tkm',name:'Southern Teal — Mockingbird',req:'tkm',vars:{'--bg':'#071814','--bg2':'#0f2a22','--accent':'#4de0c6','--accent-2':'#ffd166','--wood1':'#2a4a40','--wood2':'#1a2f28'}},
+  {id:'huck',name:'River Blue — Huck Finn',req:'huck',vars:{'--bg':'#07121b','--bg2':'#0f2236','--accent':'#7dc3ff','--accent-2':'#86c09b','--wood1':'#2a3f5a','--wood2':'#1b2a3d'}},
+  {id:'lw',name:'March Rose — Little Women',req:'lw',vars:{'--bg':'#1a0e13','--bg2':'#2a1922','--accent':'#ff88b4','--accent-2':'#9CAF88','--wood1':'#5a2b3d','--wood2':'#3c1c28'}},
+  {id:'ctr',name:'City Neon — Catcher',req:'ctr',vars:{'--bg':'#0a0a0e','--bg2':'#171520','--accent':'#ffd166','--accent-2':'#7DF9FF','--wood1':'#3f3628','--wood2':'#271f16'}},
+  {id:'im',name:'Midnight Blue — Invisible Man',req:'im',vars:{'--bg':'#05080e','--bg2':'#0a1420','--accent':'#7DF9FF','--accent-2':'#ffd166','--wood1':'#223044','--wood2':'#161f2b'}},
+  {id:'bel',name:'Haunted Indigo — Beloved',req:'bel',vars:{'--bg':'#0a0a12','--bg2':'#141428','--accent':'#b88cff','--accent-2':'#ff88b4','--wood1':'#2a284a','--wood2':'#1a1a33'}},
+  {id:'saf',name:'Delta Green — Sound & Fury',req:'saf',vars:{'--bg':'#0b1010','--bg2':'#122019','--accent':'#86c09b','--accent-2':'#b88cff','--wood1':'#2a3f34','--wood2':'#1b2a24'}},
+  {id:'tewwg',name:'Horizon Gold — TEWWG',req:'tewwg',vars:{'--bg':'#0f0b10','--bg2':'#2a1a1f','--accent':'#ffd166','--accent-2':'#b88cff','--wood1':'#4a332a','--wood2':'#2a1f1a'}},
+  {id:'gow',name:'Dust Bowl Amber — Grapes of Wrath',req:'gow',vars:{'--bg':'#120e08','--bg2':'#231a12','--accent':'#ffb74d','--accent-2':'#7DF9FF','--wood1':'#4a3828','--wood2':'#2f2218'}}
+];
+function applyTheme(id){
+  const pack = THEMES.find(t=>t.id===id) || THEMES[0];
+  Object.entries(pack.vars).forEach(([k,v])=> document.documentElement.style.setProperty(k,v));
+  saveTheme({id:pack.id});
+}
+function renderThemeMenu(){
+  const lib=loadLib();
+  themeMenu.innerHTML = THEMES.map(t=>{
+    const locked = t.req && !lib.completed?.[t.req];
+    const cols = ['--accent','--accent-2','--bg','--bg2'].map(k=>`<span class="sw" style="background:${t.vars[k]}"></span>`).join('');
+    return `<div class="theme-item ${locked?'locked':''}" data-theme="${t.id}">
+      <div>${t.name}${locked?' 🔒':''}</div>
+      <div class="theme-colors">${cols}</div>
+    </div>`;
+  }).join('');
+}
+
+function showToast(msg){ toast.innerHTML=`<strong>♡</strong> ${msg}`; toast.style.display="block"; clearTimeout(showToast._t); showToast._t=setTimeout(()=>toast.style.display='none',2800); }
+
+let selectedHero='Player', couplesMode=false;
+document.addEventListener('click',(e)=>{
+  const a=e.target.closest('[data-action]'); if(!a) return;
+  const act=a.dataset.action;
+  if(act==='choose-hero'){ selectedHero=a.dataset.hero; document.querySelectorAll('[data-action="choose-hero"]').forEach(el=>{el.classList.toggle('selected',el.dataset.hero===selectedHero); el.setAttribute('aria-pressed',String(el.dataset.hero===selectedHero));}); refreshContinue(); return; }
+  if(act==='choose-mode'){ couplesMode=(a.dataset.mode==='couples'); document.querySelectorAll('[data-action="choose-mode"]').forEach(el=>{const on=(el===a); el.classList.toggle('selected',on); el.setAttribute('aria-pressed',String(on));}); return; }
+
+  if(act==='themes'){ themeMenu.style.display = (themeMenu.style.display==='block'?'none':'block'); return; }
+
+  if(act==='board'){ showLeaderboard(); return; }
+  if(act==='ach'){ showAchievements(); return; }
+  if(act==='library'){ showLibrary(); return; }
+  if(act==='save'){ manualSave(); return; }
+  if(act==='start'){ clearSave(); doStart(false); return; }
+  if(act==='continue'){ doContinue(); return; }
+
+  if(act==='play-again'){ modalBack.style.display='none'; doStart(false); return; }
+});
+[modalBack].forEach(back=> back.addEventListener('click',(e)=>{ if(e.target===back) back.style.display='none'; }));
+document.addEventListener('click',(e)=>{ if(!e.target.closest('.theme-wrap')) themeMenu.style.display='none'; });
+themeMenu.addEventListener('click',(e)=>{
+  const item=e.target.closest('.theme-item'); if(!item) return;
+  const id=item.dataset.theme; const t=THEMES.find(z=>z.id===id);
+  const lib=loadLib();
+  if(t.req && !lib.completed?.[t.req]) { showToast('Locked — finish '+BOOK_MAP[t.req].title+' to unlock this theme.'); return; }
+  applyTheme(id); showToast('Theme applied: '+t.name); themeMenu.style.display='none';
+});
+
+function showLeaderboard(){
+  const db=loadDB();
+  const rows=db.sessions.slice().sort((a,b)=>b.score-a.score).slice(0,12).map(s=>`
+    <div class="rowline"><div><b>${s.player}</b> <span style="color:#a9a8bb">— ${new Date(s.date).toLocaleDateString()}</span></div><div>${s.score}</div></div>`).join("");
+  const meBest=db.best[currentUser?.name||'Guest']??0;
+  modalBody.innerHTML=`<h2>Leaderboard</h2><div class="list">${rows||'<div class="sub">No games yet. Play your first chapter!</div>'}
+    <div class="rowline"><div>Your Best</div><div style="color:var(--accent)">${meBest}</div></div></div>`;
+  modalBack.style.display='flex';
+}
+function showAchievements(){
+  const a=loadAch(); const rows=Object.entries(ACH_DEFS).map(([id,d])=>{
+    const got=!!a[id]; return `<div class="rowline"><div>${got?'🏆':'⧗'} <b>${d.title}</b><div class="sub">${d.desc}</div></div><div style="color:${got?'#7DF9FF':'#a9a8bb'}">${got?new Date(a[id]).toLocaleDateString():'Locked'}</div></div>`;
+  }).join("");
+  modalBody.innerHTML=`<h2>Achievements</h2><div class="list">${rows}</div>`;
+  modalBack.style.display='flex';
+}
+
+function showLibrary(fromPause=false, fromGameOver=false){
+  const lib=loadLib();
+  const completedIds=Object.keys(lib.completed||{});
+  const cards=BOOKS.map(b=>{
+    const have=lib.pages[b.id]?Object.keys(lib.pages[b.id]):[];
+    const done=!!lib.completed[b.id];
+    const piecesHtml=b.pieces.map(p=>`<span class="badge" style="border-color:${have.includes(p)?'#7DF9FF':'#2a2141'}">${have.includes(p)?'✓ ':''}${p}</span>`).join(' ');
+    return `<div class="bk" data-bk="${b.id}">
+      <h4>${done?'🏆 ':''}${b.title}</h4>
+      <div class="tiny">${b.author} • ${b.year}</div>
+      <div>${piecesHtml}</div>
+      ${done?`<div class="badge">Completed</div>`:''}
+      <div class="tiny" style="margin-top:6px">${b.fact}</div>
+    </div>`;
+  }).join("");
+
+  const totals=`<div class="list">
+    <div class="rowline"><div>Pages collected</div><div>${countPages(lib)}</div></div>
+    <div class="rowline"><div>Books completed</div><div>${completedIds.length}</div></div>
+    <div class="rowline"><div>Score</div><div>${player?.score||0}</div></div>
+  </div>`;
+
+  const controls = `<div class="list">
+    ${fromGameOver?'<div class="rowline"><div style="color:#ffd1d1">Game Over</div><div>—</div></div>':''}
+    ${fromGameOver?'<div class="rowline"><div><button class="pill" data-action="play-again">Play Again</button></div><div></div></div>':''}
+    <div class="rowline"><div><button class="pill" onclick="location.reload()">Restart</button></div><div></div></div>
+    <div class="rowline"><div><a class="pill" href="/games">Back to Games</a></div><div></div></div>
+  </div>`;
+
+  modalBody.innerHTML=`<h2>${fromGameOver?'Your Library (Game Over)':'Your Library'}</h2>${totals}<div class="lib">${cards}</div>${controls}`;
+  modalBack.style.display='flex';
+
+  modalBody.querySelectorAll('.bk').forEach(el=>{
+    el.addEventListener('click',()=>{ const id=el.dataset.bk,b=BOOK_MAP[id]; alert(`${b.title} (${b.author}, ${b.year})\n\n${b.fact}`); });
+  });
+
+  renderShelf(); renderThemeMenu();
+}
+const countPages=(lib)=>Object.values(lib.pages||{}).reduce((acc,pm)=>acc+Object.keys(pm).length,0);
+
+const ACH_DEFS={
+  score_1000:{title:"Inkling", desc:"Reach 1,000 score."},
+  score_2000:{title:"Quill Knight", desc:"Reach 2,000 score."},
+  score_5000:{title:"Star Scribe", desc:"Reach 5,000 score."},
+  pages_5:{title:"Page Turner", desc:"Collect 5 power pages."},
+  pages_15:{title:"Archivist", desc:"Collect 15 power pages."},
+  flawless:{title:"Unsmudged", desc:"Finish a wave without taking damage."},
+  first_blood:{title:"First Line", desc:"Destroy your first enemy."},
+  diver_slayer:{title:"Meteor Marginalia", desc:"Destroy a diving enemy."},
+  dual_fighter:{title:"Double Bookmark", desc:"Rescue your captured ship and fly dual."},
+  ...Object.fromEntries(BOOKS.map(b=>[`book_${b.id}`,{title:`${b.title} Trophy`, desc:`Complete all pages of ${b.title}.`}]))
+};
+function unlock(id){
+  const a=loadAch(); if(a[id]) return;
+  a[id]=Date.now(); saveAch(a);
+  const d=ACH_DEFS[id]; showToast(`Achievement unlocked: ${d.title} 🏆`);
+  renderAchSidebars();
+}
+
+function renderAchSidebars(){
+  const a=loadAch();
+  achAllList.innerHTML = Object.entries(ACH_DEFS).map(([id,d])=>{
+    const got = !!a[id];
+    return `<div class="achi ${got?'got':''}"><b>${d.title}</b><span class="tiny">${d.desc}</span></div>`;
+  }).join('');
+  const done = Object.entries(a).sort((x,y)=>y[1]-x[1]).map(([id,ts])=>{
+    const d=ACH_DEFS[id]; if(!d) return '';
+    return `<div class="achi got"><b>${d.title}</b><span class="tiny">${new Date(ts).toLocaleString()}</span></div>`;
+  }).join('') || `<div class="achi"><b>None yet</b><span class="tiny">Earn achievements to see them here.</span></div>`;
+  achDoneList.innerHTML = done;
+}
+
+const BLACK="#000", WHITE="#F0F0F0", PURPLE="#7D3AC1", SAGE="#9CAF88", ELECTRIC="#7DF9FF";
+const AMBER="#F7B733", LILAC="#B88CFF", TEAL="#39E3B7", PINK="#ffa6d9", RED="#ff6b6b";
+function fit(){ const dpr=Math.max(1,Math.min(devicePixelRatio||1,2)); canvas.width=900*dpr; canvas.height=600*dpr; canvas.style.width="900px"; canvas.style.height="600px"; ctx.setTransform(dpr,0,0,dpr,0,0); }
+function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.fill(); }
+function drawBook(x,y,color,scale=1){ ctx.save(); ctx.translate(x,y); ctx.scale(scale,scale); ctx.fillStyle=color; rr(-16,-12,32,24,4); ctx.fillStyle="#fafafa"; rr(-14,-10,22,20,3); ctx.fillStyle="#ececec"; ctx.fillRect(-14,-10,22,3); ctx.fillStyle="rgba(0,0,0,.18)"; rr(6,-10,12,20,3); ctx.fillStyle=PURPLE; rr(-2,6,6,8,2); ctx.restore(); }
+function drawBeam(x,y,h){ ctx.save(); ctx.globalAlpha=0.4; const g=ctx.createLinearGradient(x-40,y,x+40,y+h); g.addColorStop(0,ELECTRIC); g.addColorStop(1,PURPLE); ctx.fillStyle=g; rr(x-40,y,80,h,12); ctx.restore(); }
+function makeStar(){ return {x:Math.random()*900,y:Math.random()*600,sp:25+Math.random()*65,sz:1+((Math.random()*2)|0)}; }
+function makeShot(x,y){ return {x,y,vy:-850,dead:false,pierce:false}; }
+function makeEShot(x,y){ return {x,y,vy:280,dead:false}; }
+
+const POW_TYPES = {
+  R:{name:"Rapid Fire", color:ELECTRIC, letter:"R", dur:10},
+  D:{name:"Double Shot", color:LILAC,   letter:"D", dur:10},
+  S:{name:"Shield +1",  color:SAGE,     letter:"S", dur:0},
+  H:{name:"Heal +1",    color:PINK,     letter:"H", dur:0},
+  M:{name:"Score x2",   color:AMBER,    letter:"M", dur:12},
+  V:{name:"Speed Boost",color:TEAL,     letter:"V", dur:10},
+  P:{name:"Piercing",   color:"#ffd166",letter:"P", dur:10},
+  T:{name:"Time Slow",  color:"#a4b0ff",letter:"T", dur:6},
+  C:{name:"Bullet Nuke",color:"#ff9aa2",letter:"C", dur:0},
+  G:{name:"Magnet",     color:"#9bf6ff",letter:"G", dur:8},
+};
+const POW_KEYS=Object.keys(POW_TYPES);
+function drawPageDrop(d){
+  if(d.kind==='boost'){
+    const P=POW_TYPES[d.key];
+    ctx.save(); ctx.translate(d.x,d.y); ctx.rotate(d.rot);
+    ctx.fillStyle="#fff"; rr(-12,-16,24,32,3);
+    ctx.fillStyle="#e9e9e9"; ctx.fillRect(-12,-16,24,4);
+    ctx.fillStyle=P.color; rr(-8,-6,16,20,3);
+    ctx.fillStyle="#111"; ctx.font="bold 14px system-ui"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(P.letter,0,4);
+    ctx.restore();
+  } else {
+    ctx.save(); ctx.translate(d.x,d.y); ctx.rotate(d.rot);
+    ctx.fillStyle="#fff8e6"; rr(-12,-16,24,32,3);
+    ctx.strokeStyle="#d4a373"; ctx.lineWidth=2; ctx.strokeRect(-12,-16,24,32);
+    ctx.fillStyle="#111"; ctx.font="bold 12px system-ui"; ctx.textAlign="center"; ctx.fillText(d.short,0,0);
+    ctx.restore();
+  }
+}
+
+const EN_COLS=10, EN_ROWS=4;
+const SLOT_X0=180, SLOT_Y0=120, SLOT_DX=54, SLOT_DY=46;
+
+let GAME=0, paused=false, keys=new Set();
+let player, shots=[], eShots=[], stars=Array.from({length:120}, makeStar);
+let enemies=[], spawnQueue=[], alive=0, wave=1, milestone=0;
+let showQuote=false, waveHit=false, drops=[];
+let bonusStage=false;
+
+function makePlayer(){ return {
+  x:450,y:560,speed:360,reload:0,baseReload:0.18,lives:3,score:0,pages:0,
+  rfUntil:0, dsUntil:0, spdUntil:0, multUntil:0, shield:0, pierceUntil:0, slowUntil:0, magnetUntil:0,
+  dualPermanent:false, invulUntil:0
+}; }
+
+fit(); addEventListener('resize', fit);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const hit=(ax,ay,aw,ah,bx,by,bw,bh)=> ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by;
+
+function makeEnemy(slotX,slotY,color,delay,side,isBoss=false){
+  return {slotX,slotY,x:slotX,y:-40,state:'enter',t:-delay,side,color,alive:true,fireCD:1+Math.random()*2,dive:false,boss:isBoss,hp:isBoss?2:1,beam:0,hostage:false};
+}
+
+function refreshContinue(){
+  const tmpId = (currentUser?.name||'Guest').toLowerCase().replace(/\s+/g,'_');
+  const has = !!localStorage.getItem(`${LS_SAVE}::${tmpId}`);
+  btnContinue.style.display = has ? 'inline-block' : 'none';
+}
+function manualSave(){
+  if(GAME!==1){ showToast('Nothing to save — start or continue a game first.'); return; }
+  __saveProgress('manual');
+}
+window.__saveProgress = function(reason='autosave'){
+  const saveObj = {
+    wave,
+    score: player?.score||0,
+    lives: player?.lives||3,
+    dualPermanent: !!player?.dualPermanent,
+    shield: player?.shield||0,
+    date: Date.now()
+  };
+  saveSave(saveObj);
+  if(reason!=='silent') showToast(`Progress saved (${reason}).`);
+}
+
+function startWave(n){
+  wave=n; sWave.textContent=wave; bonusStage = (wave % BONUS_EVERY === 0);
+  quoteWave(wave, bonusStage);
+  enemies=[]; spawnQueue=[]; alive=0; milestone=0; waveHit=false; drops=[];
+  const colors=[AMBER,LILAC,TEAL,AMBER];
+  for(let r=0;r<EN_ROWS;r++){
+    for(let c=0;c<EN_COLS;c++){
+      const sx=SLOT_X0 + c*SLOT_DX, sy=SLOT_Y0 + r*SLOT_DY;
+      const side = ((r+c)%2===0)?'L':'R';
+      const delay = (r*EN_COLS + c)*0.08;
+      const isBoss = (r===0) && (c%4===0);
+      spawnQueue.push(makeEnemy(sx,sy,colors[r%colors.length], delay, side, isBoss));
+    }
+  }
+  alive = spawnQueue.length;
+  __saveProgress('autosave');
+}
+function quoteWave(n,isBonus){
+  const q=QUOTES[(n-1)%QUOTES.length];
+  waveTitle.textContent = isBonus ? `Bonus Chapter ${n}` : `Wave ${n}`;
+  waveQuote.textContent='"'+q[0]+'"';
+  waveBy.textContent=q[1];
+  quoteBack.style.display='flex'; showQuote=true;
+  const dismiss=()=>{ quoteBack.style.display='none'; showQuote=false; document.removeEventListener('keydown',onKey); quoteBack.removeEventListener('click',dismiss); };
+  function onKey(e){ if(e.key===' '||e.key==='Enter') dismiss(); }
+  document.addEventListener('keydown', onKey); quoteBack.addEventListener('click', dismiss);
+  clearTimeout(quoteWave._t); quoteWave._t=setTimeout(dismiss, 7000);
+}
+
+function applyBoost(key){
+  const P=POW_TYPES[key], now=performance.now()/1000;
+  if(key==='R') player.rfUntil=Math.max(player.rfUntil, now+P.dur);
+  else if(key==='D') player.dsUntil=Math.max(player.dsUntil, now+P.dur);
+  else if(key==='V') player.spdUntil=Math.max(player.spdUntil, now+P.dur);
+  else if(key==='M') player.multUntil=Math.max(player.multUntil, now+P.dur);
+  else if(key==='P') player.pierceUntil=Math.max(player.pierceUntil, now+P.dur);
+  else if(key==='T') player.slowUntil=Math.max(player.slowUntil, now+P.dur);
+  else if(key==='G') player.magnetUntil=Math.max(player.magnetUntil, now+P.dur);
+  else if(key==='S') player.shield += 1;
+  else if(key==='H') player.lives = Math.min(5, player.lives+1);
+  else if(key==='C'){ eShots.length=0; }
+  showToast(`Power-up: ${P.name}${P.dur?` (${P.dur}s)`:''}`);
+  updateBuffs();
+}
+function applyBookPage(bookId,piece){
+  const lib=loadLib(); lib.pages[bookId] = lib.pages[bookId] || {}; lib.pages[bookId][piece]=true;
+  const needed=BOOK_PIECES_MAP[bookId], have=new Set(Object.keys(lib.pages[bookId]));
+  let done=true; needed.forEach(p=>{ if(!have.has(p)) done=false; });
+  if(done && !lib.completed[bookId]){
+    lib.completed[bookId]=Date.now();
+    unlock('book_'+bookId);
+    const bonus=1200;
+    player.score += bonus;
+    showToast(`Completed "${BOOK_MAP[bookId].title}" 🏆 +${bonus}`);
+    renderThemeMenu();
+  }
+  saveLib(lib);
+  renderShelf();
+}
+
+function updateBuffs(){
+  const now=performance.now()/1000, arr=[];
+  const add=(k,until)=>{ if(until>now) arr.push([k,(until-now)|0]); };
+  add('R',player.rfUntil); add('D',player.dsUntil); add('V',player.spdUntil); add('M',player.multUntil);
+  add('P',player.pierceUntil); add('T',player.slowUntil); add('G',player.magnetUntil);
+  if(player.shield>0) arr.push(['S',player.shield]);
+  if(player.dualPermanent) arr.push(['Dual','∞']);
+  buffs.innerHTML = arr.map(([k,t])=>`<span class="badge">${k}:${t}</span>`).join('');
+}
+
+function doStart(){
+  menuPanel.style.display='none'; playWrap.style.display='block';
+  player=makePlayer(); shots=[]; eShots=[]; if(!stars||!stars.length) stars=Array.from({length:120}, makeStar);
+  startWave(1); GAME=1; paused=false; showToast('Every shot for your story!'); updateBuffs();
+  canvas.focus({preventScroll:true});
+  renderShelf(); renderAchSidebars(); renderThemeMenu();
+  refreshContinue();
+}
+function doContinue(){
+  const save=loadSave();
+  if(!save){ showToast('No saved game found.'); return; }
+  menuPanel.style.display='none'; playWrap.style.display='block';
+  player=makePlayer(); shots=[]; eShots=[];
+  player.score=save.score||0; player.lives=save.lives||3; player.dualPermanent=!!save.dualPermanent; player.shield=save.shield||0;
+  startWave(Math.max(1, save.wave||1)); GAME=1; paused=false; updateBuffs();
+  canvas.focus({preventScroll:true});
+  renderShelf(); renderAchSidebars(); renderThemeMenu();
+}
+window._start=doStart;
+
+addEventListener('keydown',(e)=>{
+  const activeTag = (document.activeElement && document.activeElement.tagName) || '';
+  const inTypingField = /^(INPUT|TEXTAREA|SELECT)$/i.test(activeTag);
+  if (GAME===1 && !inTypingField && (e.key===' ' || e.key.startsWith('Arrow'))) {
+    e.preventDefault();
+  }
+
+  if(e.key==='Escape'){
+    if(GAME===1){ paused=true; showLibrary(true); return; }
+    menuPanel.style.display='block'; playWrap.style.display='none'; GAME=0; return;
+  }
+  if(e.key==='p'||e.key==='P'){ if(GAME===1){ paused=!paused; if(paused) showLibrary(true); else modalBack.style.display='none'; } return; }
+  keys.add(e.key); if(GAME!==1 && (e.key===' '||e.key==='Enter')) doStart();
+});
+addEventListener('keyup',(e)=> keys.delete(e.key));
+
+function updateEnemy(e,dt){
+  if(!e.alive) return;
+  const slow = (player.slowUntil > performance.now()/1000) ? 0.6 : 1.0;
+  if(e.state==='enter'){
+    e.t += dt*slow; if(e.t<0) return;
+    const t=Math.min(1,e.t*0.8 + 0.0001);
+    const sx = (e.side==='L')? -80 : 980;
+    const sy = 80 + Math.sin((e.slotX+e.slotY)*0.02)*20;
+    e.x = sx + (e.slotX - sx)*t + Math.sin(t*6*Math.PI)*(e.side==='L'? 40: -40);
+    e.y = sy + (e.slotY - sy)*t + (1-t)*40;
+    if(t>=1){ e.state='formation'; e.x=e.slotX; e.y=e.slotY; e.t=0; }
+    return;
+  }
+  if(e.state==='formation'){
+    e.t += dt*slow;
+    e.x = e.slotX + Math.sin(e.t*2 + e.slotX*0.01)*3;
+    e.y = e.slotY + Math.cos(e.t*1.8 + e.slotY*0.01)*3;
+    if(e.boss && !bonusStage && Math.random()<0.0015){ e.beam = 1.6; }
+    if(Math.random()< (bonusStage?0.001:0.003) + wave*0.0005){ e.state='dive'; e.t=0; e.startX=e.x; e.startY=e.y; e.dive=true; }
+    return;
+  }
+  if(e.state==='dive'){
+    e.t += dt*slow;
+    const t=e.t;
+    e.x = e.startX + Math.sin(t*5)*120;
+    e.y = e.startY + t*380;
+    if(!bonusStage){
+      e.fireCD -= dt; if(e.fireCD<=0){ e.fireCD=0.35+Math.random()*0.4; eShots.push(makeEShot(e.x,e.y+10)); }
+    }
+    if(e.y>640){ e.state='enter'; e.t=-0.6; e.side = (Math.random()<0.5?'L':'R'); e.dive=false; }
+  }
+}
+
+function damagePlayer(){
+  const now=performance.now()/1000;
+  if(player.invulUntil>now) return;
+  if(player.shield>0){ player.shield--; player.invulUntil=now+1.2; updateBuffs(); showToast('Shield absorbed'); return; }
+  player.lives--; waveHit=true; player.invulUntil=now+1.8;
+  if(player.lives<=0){ gameOver(); }
+}
+
+function update(dt){
+  if(stars){ for(const s of stars){ s.y+=s.sp*dt; if(s.y>600){ s.y=-3; s.x=Math.random()*900; } } }
+  if(GAME!==1 || paused || showQuote) return;
+
+  if(spawnQueue.length){ const e=spawnQueue[0]; e.t += dt; if(e.t>=0){ enemies.push(e); spawnQueue.shift(); } }
+  const now=performance.now()/1000;
+
+  let mv=0; if(keys.has('ArrowLeft')||keys.has('a')||keys.has('A')) mv-=1; if(keys.has('ArrowRight')||keys.has('d')||keys.has('D')) mv+=1;
+  const spd = (player.spdUntil>now)?480:360; player.x=clamp(player.x + mv*spd*dt, 24, 900-24);
+
+  const curReload = (player.rfUntil>now||player.dualPermanent)?0.10:player.baseReload;
+  if(player.reload>0) player.reload-=dt;
+  const canFire=(keys.has(' ')||keys.has('ArrowUp'));
+  if(canFire && player.reload<=0){
+    player.reload=curReload;
+    const ds = (player.dsUntil>now)||player.dualPermanent;
+    const mk=(dx)=>{ const b=makeShot(player.x+dx,player.y-18); b.pierce=(player.pierceUntil>now); shots.push(b); };
+    if(ds){ mk(-10); mk(10); } else { mk(0); }
+  }
+
+  for(const b of shots){ b.y += b.vy*dt; if(b.y<-12) b.dead=true; }
+  shots = shots.filter(b=>!b.dead);
+  for(const b of eShots){ b.y += b.vy*dt; if(b.y>612) b.dead=true; }
+  eShots = eShots.filter(b=>!b.dead);
+
+  for(const e of enemies){ updateEnemy(e,dt); }
+
+  for(const e of enemies){
+    if(!e.alive || !e.boss) continue;
+    if(e.beam>0){
+      e.beam -= dt;
+      if(hit(player.x-18,player.y-10,36,20, e.x-40,e.y,80,580-e.y)){
+        if(!e.hostage){ e.hostage=true; damagePlayer(); showToast('Captured! Rescue to gain Dual Fighter'); }
+        e.beam=0;
+      }
+    }
+  }
+
+  for(const b of shots){
+    for(const e of enemies){
+      if(!e.alive) continue;
+      const w=32,h=24, ex=e.x-w/2, ey=e.y-h/2;
+      if(hit(b.x-2,b.y-6,4,12, ex,ey,w,h)){
+        if(!loadAch().first_blood) unlock('first_blood');
+        if(e.dive) unlock('diver_slayer');
+
+        e.hp--; if(e.hp<=0){ e.alive=false; alive--; }
+        if(!b.pierce) b.dead=true;
+
+        let rowScore = 40 + Math.round((e.slotY - SLOT_Y0)/SLOT_DY)*10;
+        if(e.boss) rowScore+=60;
+        if(player.multUntil>now) rowScore*=2;
+        player.score += rowScore;
+
+        if(e.boss && e.hostage){ player.dualPermanent=true; unlock('dual_fighter'); updateBuffs(); showToast('Dual Fighter rescued!'); }
+
+        const dropRoll=Math.random();
+        const dropBoostChance = (e.dive?0.25:0.14) + (e.boss?0.12:0);
+        const dropBookChance  = (e.dive?0.16:0.10) + (e.boss?0.08:0);
+        if(dropRoll < dropBoostChance){
+          const key=POW_KEYS[(Math.random()*POW_KEYS.length)|0];
+          drops.push({kind:'boost', key, x:e.x, y:e.y, vy:140+Math.random()*60, rot:Math.random()*6.28, dead:false});
+        } else if(dropRoll < dropBoostChance + dropBookChance){
+          const bk=BOOKS[(Math.random()*BOOKS.length)|0];
+          const need=BOOK_PIECES_MAP[bk.id];
+          const lib=loadLib(); const haveSet=new Set(Object.keys(lib.pages?.[bk.id]||{}));
+          let piece=[...need].find(p=>!haveSet.has(p)); if(!piece) piece=[...need][(Math.random()*need.size)|0];
+          drops.push({kind:'book', bookId:bk.id, piece, short:bk.title.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(), x:e.x, y:e.y, vy:120+Math.random()*50, rot:Math.random()*6.28, dead:false});
+        }
+        break;
+      }
+    }
+  }
+  shots = shots.filter(b=>!b.dead);
+  enemies = enemies.filter(e=>e.alive || e.state!=='dead');
+
+  if(!bonusStage){
+    for(const b of eShots){
+      if(hit(player.x-18,player.y-10,36,20, b.x-2,b.y-2,4,6)){
+        b.dead=true; damagePlayer(); if(player.lives<=0){ return; }
+      }
+    }
+    eShots = eShots.filter(b=>!b.dead);
+  }
+
+  for(const e of enemies){
+    if(!e.alive) continue;
+    const w=28,h=20, ex=e.x-w/2, ey=e.y-h/2;
+    if(hit(player.x-18,player.y-10,36,20, ex,ey,w,h)){
+      e.alive=false; alive--; damagePlayer(); if(player.lives<=0){ return; }
+    }
+  }
+
+  for(const d of drops){
+    d.y += d.vy*dt; d.rot += 1.8*dt;
+    if(d.y>612) d.dead=true;
+    const now2=performance.now()/1000;
+    if(player.magnetUntil>now2){
+      const dx=player.x - d.x, dy=player.y - d.y, dist=Math.hypot(dx,dy);
+      if(dist<200){ d.x += (dx/dist)*120*dt; d.y += (dy/dist)*120*dt; }
+    }
+    if(hit(player.x-18,player.y-10,36,20, d.x-12,d.y-16,24,32)){
+      d.dead=true; player.pages++;
+      if(d.kind==='boost') applyBoost(d.key);
+      else applyBookPage(d.bookId, d.piece);
+    }
+  }
+  drops = drops.filter(d=>!d.dead);
+
+  const allGone = enemies.every(e=>!e.alive) && !spawnQueue.length;
+  if(allGone){
+    if(!waveHit) unlock('flawless');
+    startWave(wave+1);
+  }
+
+  if(player.score>=1000) unlock('score_1000');
+  if(player.score>=2000) unlock('score_2000');
+  if(player.score>=5000) unlock('score_5000');
+  if(player.pages>=5) unlock('pages_5');
+  if(player.pages>=15) unlock('pages_15');
+
+  if(milestone<MILESTONES.length && player.score>=MILESTONES[milestone]){
+    const msgs=["Page by page, you're writing a legend!","Stellar aim! Keep going!","Galactic groove achieved!","Plot twist: you're unstoppable!"];
+    showToast(`Milestone ${MILESTONES[milestone]}! ${msgs[milestone%4]}`); milestone++;
+  }
+
+  hudText.textContent=`Score: ${player.score}   Wave: ${wave}${bonusStage?' (Bonus)':''}   Lives: ${player.lives}`;
+  const db=loadDB(); sScore.textContent=player.score; sWave.textContent=wave; sHigh.textContent=(db.best[currentUser?.name||'Guest']||0);
+  sHearts.textContent="💗".repeat(player.lives)+"🤍".repeat(Math.max(0,3-player.lives));
+  updateBuffs();
+}
+
+function draw(){
+  ctx.fillStyle=BLACK; ctx.fillRect(0,0,900,600);
+  if(stars){ ctx.fillStyle="rgba(255,255,255,.9)"; for(const s of stars) ctx.fillRect(s.x,s.y,s.sz,s.sz); }
+  if(GAME===1){
+    for(const e of enemies){ if(!e.alive) continue; drawBook(e.x,e.y, e.boss?RED:e.color, 1); if(e.beam>0) drawBeam(e.x, e.y+12, 600-(e.y+12)); }
+    ctx.fillStyle="#ffd16f"; for(const b of eShots) ctx.fillRect(b.x-2,b.y-3,4,6);
+    for(const d of drops) drawPageDrop(d);
+    ctx.fillStyle=(currentUser?currentUser.accent:ELECTRIC); for(const b of shots) ctx.fillRect(b.x-2,b.y-6,4,12);
+
+    const now=performance.now()/1000;
+    const blinking = player && (player.invulUntil>now) && (Math.floor(now*10)%2===0);
+    if(!blinking){
+      ctx.fillStyle=WHITE; rr(player.x-18,player.y-10,36,20,6);
+      ctx.fillStyle=(currentUser?currentUser.accent:ELECTRIC); rr(player.x-6,player.y-12,12,8,3);
+      ctx.fillStyle=PURPLE; rr(player.x-2,player.y-10,4,20,2);
+    }
+    if(paused){ ctx.fillStyle="rgba(0,0,0,.55)"; ctx.fillRect(0,0,900,600); }
+  }
+}
+
+function gameOver(){
+  pushSession({player:currentUser?.name||'Guest', score:player.score, pages:player.pages, date:new Date().toISOString()});
+  clearSave();
+  paused=true;
+  renderAchSidebars();
+  showToast('Game over — score saved!');
+  showLibrary(false,true);
+}
+
+function renderShelf(){
+  const lib=loadLib();
+  const html = BOOKS.map(b=>{
+    const haveSet = new Set(Object.keys(lib.pages?.[b.id]||{}));
+    const done = !!lib.completed?.[b.id];
+    const total = BOOK_PIECES_MAP[b.id].size;
+    const count = haveSet.size;
+    const initials = b.title.split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    const extra = Math.round((count/total)*18);
+    const h = 60 + extra + (done?12:0);
+    const dots = [...Array(total)].map((_,i)=>`<span class="dot ${i<count?'on':''}"></span>`).join('');
+    return `<div class="slot" data-bk="${b.id}" title="${b.title} — ${count}/${total} pages">
+      <div class="spine ${done?'done':''}" style="height:${h}px">
+        ${done?'<div class="cap">🏆</div>':''}
+        <div class="label">${initials}</div>
+        ${done?'':`<div class="dots>${dots}</div>`}
+      </div>
+    </div>`;
+  }).join('');
+  shelf.innerHTML = html;
+  shelf.querySelectorAll('.slot').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const id=el.dataset.bk, b=BOOK_MAP[id];
+      alert(`${b.title} (${b.author}, ${b.year})\n\n${b.fact}`);
+    });
+  });
+}
+
+let last=performance.now();
+function loop(ts){ const dt=Math.min(.033,(ts-last)/1000); last=ts; update(dt); draw(); requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+
+window.addEventListener('beforeunload', ()=>{ if(GAME===1){ __saveProgress('silent'); } });
+
+renderShelf(); renderAchSidebars(); renderThemeMenu();
+applyTheme(loadTheme().id);
+refreshContinue();
+})();
+</script>
+</body>
+</html>
