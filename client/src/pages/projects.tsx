@@ -3,7 +3,8 @@ import { Footer } from "@/components/footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github, Lock, Cpu, Shield, Zap, Wrench } from "lucide-react";
+import { ExternalLink, Github, Lock, Cpu, Shield, Zap, Wrench, Disc3 } from "lucide-react";
+import { Link } from "wouter";
 
 const projects = [
   {
@@ -46,6 +47,15 @@ const projects = [
     tags: ["Web Development", "Content Management", "RV Maintenance"],
     icon: Wrench,
     url: "https://rvfixin.com",
+  },
+  {
+    id: "mp4-holofans",
+    title: "MP4 Holographic Display Fans",
+    description: "Experience the future of visual display with our holographic fan technology. Browse 500+ ready-to-use holograms or create your own custom holographic content with personalized messages and voice recordings.",
+    status: "Active",
+    tags: ["Holographic Tech", "3D Display", "Custom Media"],
+    icon: Disc3,
+    internalPath: "/projects/holofans",
   },
 ];
 
@@ -141,6 +151,18 @@ export default function Projects() {
                         <ExternalLink className="w-4 h-4 mr-2" />
                         Visit Site
                       </a>
+                    </Button>
+                  )}
+                  {project.internalPath && (
+                    <Button
+                      asChild
+                      className="w-full"
+                      data-testid={`button-explore-${project.id}`}
+                    >
+                      <Link href={project.internalPath}>
+                        <Disc3 className="w-4 h-4 mr-2" />
+                        Explore Project
+                      </Link>
                     </Button>
                   )}
                 </CardContent>

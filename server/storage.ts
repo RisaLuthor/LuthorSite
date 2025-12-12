@@ -2,12 +2,15 @@ import {
   users,
   chatMessages,
   contactSubmissions,
+  hologramUploads,
   type User, 
   type UpsertUser, 
   type ChatMessage, 
   type InsertChatMessage,
   type ContactSubmission,
-  type InsertContactSubmission
+  type InsertContactSubmission,
+  type HologramUpload,
+  type InsertHologramUpload
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, isNull } from "drizzle-orm";
@@ -22,6 +25,9 @@ export interface IStorage {
   clearChatMessages(userId?: string): Promise<void>;
   createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission>;
   getContactSubmissions(): Promise<ContactSubmission[]>;
+  createHologramUpload(upload: InsertHologramUpload): Promise<HologramUpload>;
+  getHologramUploads(userId?: string): Promise<HologramUpload[]>;
+  updateHologramStatus(id: string, status: "pending" | "processing" | "completed" | "failed", downloadUrl?: string): Promise<HologramUpload | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -99,6 +105,37 @@ export class DatabaseStorage implements IStorage {
 
   async getContactSubmissions(): Promise<ContactSubmission[]> {
     return await db.select().from(contactSubmissions);
+  }
+
+  async createHologramUpload(upload: InsertHologramUpload): Promise<HologramUpload> {
+    const [newUpload] = await db
+      .insert(hologramUploads)
+      .values({
+        id: randomUUID(),
+        ...upload,
+      })
+      .returning();
+    return newUpload;
+  }
+
+  async getHologramUploads(userId?: string): Promise<HologramUpload[]> {
+    if (userId) {
+      return await db.select().from(hologramUploads).where(eq(hologramUploads.userId, userId));
+    }
+    return await db.select().from(hologramUploads);
+  }
+
+  async updateHologramStatus(
+    id: string, 
+    status: "pending" | "processing" | "completed" | "failed", 
+    downloadUrl?: string
+  ): Promise<HologramUpload | undefined> {
+    const [updated] = await db
+      .update(hologramUploads)
+      .set({ status, downloadUrl })
+      .where(eq(hologramUploads.id, id))
+      .returning();
+    return updated;
   }
 }
 

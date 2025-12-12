@@ -84,3 +84,30 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
 
 export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+
+export const hologramUploads = pgTable("hologram_uploads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id"),
+  imageUrl: text("image_url"),
+  customMessage: text("custom_message"),
+  voiceUrl: text("voice_url"),
+  color: varchar("color").default("Cyan"),
+  style: varchar("style").default("Spinning"),
+  status: varchar("status").$type<"pending" | "processing" | "completed" | "failed">().default("pending"),
+  downloadUrl: text("download_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertHologramUploadSchema = createInsertSchema(hologramUploads).pick({
+  userId: true,
+  imageUrl: true,
+  customMessage: true,
+  voiceUrl: true,
+  color: true,
+  style: true,
+}).extend({
+  customMessage: z.string().max(100, "Message must be 100 characters or less").optional(),
+});
+
+export type InsertHologramUpload = z.infer<typeof insertHologramUploadSchema>;
+export type HologramUpload = typeof hologramUploads.$inferSelect;

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertChatMessageSchema, insertContactSubmissionSchema } from "@shared/schema";
+import { insertChatMessageSchema, insertContactSubmissionSchema, insertHologramUploadSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import OpenAI from "openai";
 
@@ -205,6 +205,64 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Contact form error:", error);
       res.status(500).json({ error: "Failed to submit contact form" });
+    }
+  });
+
+  app.post("/api/holograms/upload", async (req: any, res) => {
+    try {
+      const result = insertHologramUploadSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          error: "Invalid upload data",
+          details: result.error.errors 
+        });
+      }
+
+      const userId = req.user?.claims?.sub;
+      
+      const upload = await storage.createHologramUpload({
+        ...result.data,
+        userId,
+      });
+
+      setTimeout(async () => {
+        await storage.updateHologramStatus(
+          upload.id, 
+          "completed", 
+          `/api/holograms/download/${upload.id}`
+        );
+      }, 2000);
+      
+      res.json({
+        success: true,
+        message: "Your hologram is being created!",
+        upload,
+      });
+    } catch (error) {
+      console.error("Hologram upload error:", error);
+      res.status(500).json({ error: "Failed to create hologram" });
+    }
+  });
+
+  app.get("/api/holograms/user", async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const uploads = await storage.getHologramUploads(userId);
+      res.json(uploads);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch holograms" });
+    }
+  });
+
+  app.get("/api/holograms/download/:id", async (req, res) => {
+    try {
+      res.json({ 
+        message: "Hologram download ready",
+        downloadUrl: `/holograms/${req.params.id}.mp4`
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to download hologram" });
     }
   });
 

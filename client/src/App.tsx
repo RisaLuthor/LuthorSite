@@ -17,6 +17,7 @@ import Login from "@/pages/login";
 import FeatureCeFiDeFi from "@/pages/feature-cefi-defi";
 import FeatureAICompanion from "@/pages/feature-ai-companion";
 import FeatureVoiceControl from "@/pages/feature-voice-control";
+import ProjectHolofans from "@/pages/project-holofans";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -35,6 +36,7 @@ function Router() {
       <Route path="/features/cefi-defi" component={FeatureCeFiDeFi} />
       <Route path="/features/ai-companion" component={FeatureAICompanion} />
       <Route path="/features/voice-control" component={FeatureVoiceControl} />
+      <Route path="/projects/holofans" component={ProjectHolofans} />
       <Route component={NotFound} />
     </Switch>
   );

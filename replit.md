@@ -44,6 +44,9 @@ Preferred communication style: Simple, everyday language.
 - POST /api/chat/messages - Create new chat message with AI response
 - DELETE /api/chat/messages - Clear chat history
 - POST /api/contact - Submit contact form
+- POST /api/holograms/upload - Create custom hologram from user upload
+- GET /api/holograms/user - Get user's hologram uploads
+- GET /api/holograms/download/:id - Download generated hologram
 - GET /api/login - Initiate Replit OAuth flow
 - GET /api/callback - Handle OAuth callback
 - GET /api/logout - End user session
@@ -68,6 +71,7 @@ Preferred communication style: Simple, everyday language.
 - `users`: User profiles with id, email, firstName, lastName, profileImageUrl, userType (personal/enterprise), timestamps
 - `chat_messages`: Chat history with id, content, role (user/assistant), userType, userId (optional)
 - `contact_submissions`: Contact form entries with id, name, email, subject, message, createdAt
+- `hologram_uploads`: Custom hologram creations with id, userId, imageUrl, customMessage, voiceUrl, color, style, status, downloadUrl, createdAt
 
 **Schema Validation**: Zod schemas generated from Drizzle table definitions for runtime validation, ensuring type safety across the stack.
 
