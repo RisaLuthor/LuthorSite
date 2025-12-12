@@ -20,6 +20,8 @@ import { useToast } from "@/hooks/use-toast";
 
 const categories = [
   { id: "all", name: "All Holograms", icon: Sparkles },
+  { id: "starwars", name: "Star Wars", icon: Star },
+  { id: "tvshows", name: "TV Shows", icon: Camera },
   { id: "animals", name: "Animals", icon: Heart },
   { id: "nature", name: "Nature", icon: Sun },
   { id: "space", name: "Space & Sci-Fi", icon: Rocket },
@@ -53,6 +55,31 @@ const generateHolograms = () => {
     downloads: number;
     featured: boolean;
   }> = [];
+  
+  const starWarsNames = [
+    "Darth Vader", "Luke Skywalker", "Princess Leia", "Yoda", "Obi-Wan Kenobi",
+    "Han Solo", "Chewbacca", "R2-D2", "C-3PO", "Boba Fett", "Mandalorian",
+    "Baby Yoda Grogu", "Kylo Ren", "Rey", "Stormtrooper", "Death Star",
+    "Millennium Falcon", "X-Wing Fighter", "TIE Fighter", "Star Destroyer",
+    "Lightsaber Blue", "Lightsaber Red", "Lightsaber Green", "Lightsaber Purple",
+    "Imperial Logo", "Rebel Alliance", "Jedi Order", "Sith Symbol",
+    "May The Force", "I Am Your Father", "Do Or Do Not", "This Is The Way",
+    "The Force Awakens", "Dark Side", "Light Side", "Clone Trooper",
+    "AT-AT Walker", "BB-8", "Ewok", "Wookiee"
+  ];
+  
+  const tvShowNames = [
+    "Walter White", "Jesse Pinkman", "Michael Scott", "Dwight Schrute",
+    "Jon Snow", "Daenerys", "Tyrion Lannister", "Sheldon Cooper",
+    "Rick Sanchez", "Morty Smith", "Homer Simpson", "Bart Simpson",
+    "SpongeBob", "Patrick Star", "Peter Griffin", "Stewie Griffin",
+    "Pikachu", "Goku", "Naruto", "Luffy One Piece",
+    "Say My Name", "I Am The One Who Knocks", "Thats What She Said",
+    "Winter Is Coming", "You Know Nothing", "Bazinga", "Wubba Lubba",
+    "Doh", "Cowabunga", "Im Ready", "Giggity", "How You Doin",
+    "Pivot", "We Were On A Break", "Yada Yada Yada", "No Soup For You",
+    "Live Long Prosper", "Make It So", "Engage", "Its Bigger On Inside"
+  ];
   
   const animalNames = [
     "Lion", "Tiger", "Eagle", "Wolf", "Dragon", "Phoenix", "Unicorn", "Dolphin",
@@ -149,6 +176,8 @@ const generateHolograms = () => {
   ];
   
   const categoryData: Record<string, string[]> = {
+    starwars: starWarsNames,
+    tvshows: tvShowNames,
     animals: animalNames,
     nature: natureNames,
     space: spaceNames,
