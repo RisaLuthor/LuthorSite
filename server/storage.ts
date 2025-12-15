@@ -178,18 +178,38 @@ export class DatabaseStorage implements IStorage {
           : { formality: 30, empathy: 70, directness: 50 },
         interactionStyle: userType === "enterprise" ? "professional" : "friendly",
       })
+      .onConflictDoNothing({ target: kieranProfiles.email })
       .returning();
     
-    return profile;
+    if (profile) {
+      return profile;
+    }
+    
+    const [existingAfterConflict] = await db
+      .select()
+      .from(kieranProfiles)
+      .where(eq(kieranProfiles.email, email));
+    
+    return existingAfterConflict;
   }
 
   async updateKieranProfile(
     profileId: string, 
     updates: Partial<InsertKieranProfile>
   ): Promise<KieranProfile | undefined> {
+    const { email, userId, userType, isCreator, toneSettings, knowledgeFocus, interactionStyle } = updates;
+    const setValues: Record<string, unknown> = { updatedAt: new Date() };
+    if (email !== undefined) setValues.email = email;
+    if (userId !== undefined) setValues.userId = userId;
+    if (userType !== undefined) setValues.userType = userType;
+    if (isCreator !== undefined) setValues.isCreator = isCreator;
+    if (toneSettings !== undefined) setValues.toneSettings = toneSettings;
+    if (knowledgeFocus !== undefined) setValues.knowledgeFocus = knowledgeFocus;
+    if (interactionStyle !== undefined) setValues.interactionStyle = interactionStyle;
+    
     const [updated] = await db
       .update(kieranProfiles)
-      .set({ ...updates, updatedAt: new Date() })
+      .set(setValues)
       .where(eq(kieranProfiles.id, profileId))
       .returning();
     return updated;
@@ -200,7 +220,11 @@ export class DatabaseStorage implements IStorage {
       .insert(kieranMemories)
       .values({
         id: randomUUID(),
-        ...memory,
+        profileId: memory.profileId,
+        memoryType: memory.memoryType,
+        content: memory.content,
+        importance: memory.importance,
+        sourceMessageIds: memory.sourceMessageIds,
       })
       .returning();
     return newMemory;
