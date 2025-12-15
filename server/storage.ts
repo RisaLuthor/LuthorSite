@@ -5,6 +5,9 @@ import {
   hologramUploads,
   kieranProfiles,
   kieranMemories,
+  workUpdates,
+  blogComments,
+  printingProjects,
   type User, 
   type UpsertUser, 
   type ChatMessage, 
@@ -16,7 +19,13 @@ import {
   type KieranProfile,
   type InsertKieranProfile,
   type KieranMemory,
-  type InsertKieranMemory
+  type InsertKieranMemory,
+  type WorkUpdate,
+  type InsertWorkUpdate,
+  type BlogComment,
+  type InsertBlogComment,
+  type PrintingProject,
+  type InsertPrintingProject
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, isNull, desc } from "drizzle-orm";
@@ -39,6 +48,15 @@ export interface IStorage {
   addKieranMemory(memory: InsertKieranMemory): Promise<KieranMemory>;
   getKieranMemories(profileId: string, limit?: number): Promise<KieranMemory[]>;
   updateMemoryImportance(memoryId: string, importance: number): Promise<KieranMemory | undefined>;
+  // Work Updates
+  getWorkUpdates(): Promise<WorkUpdate[]>;
+  createWorkUpdate(update: InsertWorkUpdate): Promise<WorkUpdate>;
+  // Blog Comments
+  getBlogComments(workUpdateId?: string): Promise<BlogComment[]>;
+  createBlogComment(comment: InsertBlogComment): Promise<BlogComment>;
+  // Printing Projects
+  getPrintingProjects(): Promise<PrintingProject[]>;
+  createPrintingProject(project: InsertPrintingProject): Promise<PrintingProject>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -246,6 +264,57 @@ export class DatabaseStorage implements IStorage {
       .where(eq(kieranMemories.id, memoryId))
       .returning();
     return updated;
+  }
+
+  // Work Updates
+  async getWorkUpdates(): Promise<WorkUpdate[]> {
+    return await db.select().from(workUpdates).orderBy(desc(workUpdates.createdAt));
+  }
+
+  async createWorkUpdate(update: InsertWorkUpdate): Promise<WorkUpdate> {
+    const [newUpdate] = await db
+      .insert(workUpdates)
+      .values({
+        id: randomUUID(),
+        ...update,
+      })
+      .returning();
+    return newUpdate;
+  }
+
+  // Blog Comments
+  async getBlogComments(workUpdateId?: string): Promise<BlogComment[]> {
+    if (workUpdateId) {
+      return await db.select().from(blogComments).where(eq(blogComments.workUpdateId, workUpdateId)).orderBy(desc(blogComments.createdAt));
+    }
+    return await db.select().from(blogComments).orderBy(desc(blogComments.createdAt));
+  }
+
+  async createBlogComment(comment: InsertBlogComment): Promise<BlogComment> {
+    const [newComment] = await db
+      .insert(blogComments)
+      .values({
+        id: randomUUID(),
+        ...comment,
+      })
+      .returning();
+    return newComment;
+  }
+
+  // Printing Projects
+  async getPrintingProjects(): Promise<PrintingProject[]> {
+    return await db.select().from(printingProjects).orderBy(desc(printingProjects.createdAt));
+  }
+
+  async createPrintingProject(project: InsertPrintingProject): Promise<PrintingProject> {
+    const [newProject] = await db
+      .insert(printingProjects)
+      .values({
+        id: randomUUID(),
+        ...project,
+      })
+      .returning();
+    return newProject;
   }
 }
 

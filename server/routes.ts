@@ -1,9 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertChatMessageSchema, insertContactSubmissionSchema, insertHologramUploadSchema, type KieranProfile, type KieranMemory } from "@shared/schema";
+import { insertChatMessageSchema, insertContactSubmissionSchema, insertHologramUploadSchema, insertWorkUpdateSchema, insertBlogCommentSchema, insertPrintingProjectSchema, type KieranProfile, type KieranMemory } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import OpenAI from "openai";
+import { getCalendarEvents } from "./googleCalendar";
 
 const openai = new OpenAI({
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
@@ -362,6 +363,98 @@ export async function registerRoutes(
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to download hologram" });
+    }
+  });
+
+  // Google Calendar API
+  app.get("/api/calendar/events", async (req, res) => {
+    try {
+      const { timeMin, timeMax } = req.query;
+      const startDate = timeMin ? new Date(timeMin as string) : new Date();
+      const endDate = timeMax ? new Date(timeMax as string) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      
+      const events = await getCalendarEvents(startDate, endDate);
+      res.json(events);
+    } catch (error: any) {
+      console.error("Calendar error:", error?.message || error);
+      res.status(500).json({ error: "Failed to fetch calendar events" });
+    }
+  });
+
+  // Work Updates API
+  app.get("/api/blog/updates", async (req, res) => {
+    try {
+      const updates = await storage.getWorkUpdates();
+      res.json(updates);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch work updates" });
+    }
+  });
+
+  app.post("/api/blog/updates", isAuthenticated, async (req: any, res) => {
+    try {
+      const result = insertWorkUpdateSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid update data", details: result.error.errors });
+      }
+      const update = await storage.createWorkUpdate(result.data);
+      res.json(update);
+    } catch (error) {
+      console.error("Work update error:", error);
+      res.status(500).json({ error: "Failed to create work update" });
+    }
+  });
+
+  // Blog Comments API
+  app.get("/api/blog/comments", async (req, res) => {
+    try {
+      const { workUpdateId } = req.query;
+      const comments = await storage.getBlogComments(workUpdateId as string | undefined);
+      res.json(comments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch comments" });
+    }
+  });
+
+  app.post("/api/blog/comments", async (req: any, res) => {
+    try {
+      const result = insertBlogCommentSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid comment data", details: result.error.errors });
+      }
+      const userId = req.user?.claims?.sub;
+      const comment = await storage.createBlogComment({
+        ...result.data,
+        userId,
+      });
+      res.json(comment);
+    } catch (error) {
+      console.error("Comment error:", error);
+      res.status(500).json({ error: "Failed to create comment" });
+    }
+  });
+
+  // 3D Printing Projects API
+  app.get("/api/blog/printing-projects", async (req, res) => {
+    try {
+      const projects = await storage.getPrintingProjects();
+      res.json(projects);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch printing projects" });
+    }
+  });
+
+  app.post("/api/blog/printing-projects", isAuthenticated, async (req: any, res) => {
+    try {
+      const result = insertPrintingProjectSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid project data", details: result.error.errors });
+      }
+      const project = await storage.createPrintingProject(result.data);
+      res.json(project);
+    } catch (error) {
+      console.error("Printing project error:", error);
+      res.status(500).json({ error: "Failed to create printing project" });
     }
   });
 
