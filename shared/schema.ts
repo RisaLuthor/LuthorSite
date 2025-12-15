@@ -157,3 +157,72 @@ export const insertKieranMemorySchema = createInsertSchema(kieranMemories).omit(
 
 export type InsertKieranMemory = z.infer<typeof insertKieranMemorySchema>;
 export type KieranMemory = typeof kieranMemories.$inferSelect;
+
+// Blog Work Updates - What Risa is working on
+export const workUpdates = pgTable("work_updates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  category: varchar("category").$type<"development" | "3d-printing" | "ai" | "general">().default("general"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertWorkUpdateSchema = createInsertSchema(workUpdates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertWorkUpdate = z.infer<typeof insertWorkUpdateSchema>;
+export type WorkUpdate = typeof workUpdates.$inferSelect;
+
+// Blog Comments
+export const blogComments = pgTable("blog_comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  workUpdateId: varchar("work_update_id"),
+  userId: varchar("user_id"),
+  authorName: text("author_name").notNull(),
+  authorEmail: text("author_email"),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertBlogCommentSchema = createInsertSchema(blogComments).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  authorName: z.string().min(2, "Name must be at least 2 characters"),
+  content: z.string().min(3, "Comment must be at least 3 characters").max(1000, "Comment too long"),
+});
+
+export type InsertBlogComment = z.infer<typeof insertBlogCommentSchema>;
+export type BlogComment = typeof blogComments.$inferSelect;
+
+// 3D Printing Projects
+export const printingProjects = pgTable("printing_projects", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: varchar("category").$type<"nas-case" | "server-case" | "custom" | "other">().default("custom"),
+  imageUrl: text("image_url"),
+  specifications: jsonb("specifications").$type<{
+    storageBays?: number;
+    storageCapacity?: string;
+    dimensions?: string;
+    materials?: string[];
+    features?: string[];
+  }>(),
+  buildInstructions: text("build_instructions"),
+  hardwareRecommendations: text("hardware_recommendations"),
+  status: varchar("status").$type<"available" | "coming-soon" | "custom-order">().default("available"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPrintingProjectSchema = createInsertSchema(printingProjects).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertPrintingProject = z.infer<typeof insertPrintingProjectSchema>;
+export type PrintingProject = typeof printingProjects.$inferSelect;
