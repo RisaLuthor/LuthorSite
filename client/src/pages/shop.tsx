@@ -4,14 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ShoppingBag,
-  BookOpen,
   ExternalLink,
   Store,
   Package,
   Star,
   ArrowRight,
+  Disc3,
+  MessageSquare,
+  Mic,
+  Image,
 } from "lucide-react";
 import { SiEtsy, SiAmazon } from "react-icons/si";
+import { Link } from "wouter";
 
 const shopSections = [
   {
@@ -46,25 +50,49 @@ const shopSections = [
 
 const featuredProducts = [
   {
+    title: "MP4 Holographic Display Fans",
+    category: "Hardware",
+    platform: "Luthor.Tech",
+    description: "Create stunning 3D holographic displays with our MP4 display fan products. Perfect for business, entertainment, or personal use.",
+    badge: "Featured",
+    icon: Disc3,
+    link: "/projects/holofans",
+  },
+  {
+    title: "Hologram Templates",
+    category: "Digital Content",
+    platform: "Luthor.Tech",
+    description: "700+ ready-to-use hologram templates including Star Wars, TV shows, animals, and more. Download and display instantly.",
+    badge: "New",
+    icon: Image,
+    link: "/projects/holofans",
+  },
+  {
+    title: "Custom Messages & Text",
+    category: "Digital Content",
+    platform: "Luthor.Tech",
+    description: "Create personalized holographic messages for events, promotions, or special occasions with custom text and animations.",
+    badge: "Popular",
+    icon: MessageSquare,
+    link: "/projects/holofans",
+  },
+  {
+    title: "Voice Recording Holograms",
+    category: "Digital Content",
+    platform: "Luthor.Tech",
+    description: "Add voice recordings to your holograms for interactive displays. Perfect for greetings, announcements, and presentations.",
+    badge: "Coming Soon",
+    icon: Mic,
+    link: "/projects/holofans",
+  },
+  {
     title: "AI Development Guide",
     category: "E-Book",
     platform: "Amazon",
     description: "Comprehensive guide to building AI-powered applications from concept to deployment.",
     badge: "New Release",
-  },
-  {
-    title: "Tech Career Starter Kit",
-    category: "Digital Bundle",
-    platform: "Etsy",
-    description: "Templates, guides, and resources to launch your technology career.",
-    badge: "Best Seller",
-  },
-  {
-    title: "Machine Learning Fundamentals",
-    category: "E-Book",
-    platform: "Amazon",
-    description: "Learn the foundations of machine learning with practical examples and exercises.",
-    badge: "Popular",
+    icon: null,
+    link: null,
   },
 ];
 
@@ -85,10 +113,60 @@ export default function Shop() {
                 Shop
               </h1>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Discover my published books, digital products, and tech merchandise. 
-                From AI guides to unique designs, find resources to fuel your tech journey.
+                Discover holographic display products, digital templates, published books, and tech merchandise. 
+                From MP4 display fans to AI guides, find resources to fuel your tech journey.
               </p>
             </div>
+
+            <Card 
+              className="bg-card/80 border-primary/30 overflow-hidden mb-16"
+              style={{ boxShadow: "0 0 40px hsl(187 100% 50% / 0.15)" }}
+            >
+              <CardContent className="p-8 lg:p-12">
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+                  <div className="text-center lg:text-left">
+                    <Badge className="bg-primary/20 text-primary border-0 mb-4">
+                      Featured Product
+                    </Badge>
+                    <h2 
+                      className="font-display text-2xl lg:text-3xl font-bold tracking-wider mb-4"
+                      style={{ color: "hsl(187 100% 50%)", textShadow: "0 0 10px hsl(187 100% 50% / 0.5)" }}
+                    >
+                      MP4 Holographic Display Fans
+                    </h2>
+                    <p className="text-muted-foreground max-w-xl mb-4">
+                      Create mesmerizing 3D holographic displays with our collection of MP4 display fan products, 
+                      templates, and content. Browse 700+ ready-to-use holograms or create your own custom designs.
+                    </p>
+                    <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+                      <Badge variant="outline" className="border-primary/50 text-primary">
+                        700+ Templates
+                      </Badge>
+                      <Badge variant="outline" className="border-primary/50 text-primary">
+                        Custom Messages
+                      </Badge>
+                      <Badge variant="outline" className="border-primary/50 text-primary">
+                        Voice Recordings
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <Link href="/projects/holofans">
+                      <Button 
+                        size="lg"
+                        className="bg-primary text-primary-foreground"
+                        style={{ boxShadow: "0 0 20px hsl(187 100% 50% / 0.4)" }}
+                        data-testid="button-shop-holofans"
+                      >
+                        <Disc3 className="w-5 h-5 mr-2" />
+                        Browse Holograms
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             <div className="grid md:grid-cols-2 gap-8 mb-16">
               {shopSections.map((section, index) => (
@@ -183,7 +261,7 @@ export default function Shop() {
                   Featured Products
                 </h2>
                 <p className="text-muted-foreground">
-                  Popular picks from my collection of books and digital products
+                  Popular picks from my collection of holographic content and digital products
                 </p>
               </div>
 
@@ -213,7 +291,11 @@ export default function Shop() {
                           border: "1px solid hsl(187 100% 50% / 0.2)"
                         }}
                       >
-                        <BookOpen className="w-12 h-12 text-primary/50" />
+                        {product.icon ? (
+                          <product.icon className="w-12 h-12 text-primary/50" />
+                        ) : (
+                          <ShoppingBag className="w-12 h-12 text-primary/50" />
+                        )}
                       </div>
                       <h3 className="font-heading font-semibold mb-2">{product.title}</h3>
                       <p className="text-sm text-muted-foreground mb-4">{product.description}</p>
@@ -221,10 +303,19 @@ export default function Shop() {
                         <Badge variant="outline" className="text-xs">
                           {product.platform}
                         </Badge>
-                        <Button variant="ghost" size="sm" className="text-primary hover:text-primary">
-                          View Details
-                          <ArrowRight className="w-4 h-4 ml-1" />
-                        </Button>
+                        {product.link ? (
+                          <Link href={product.link}>
+                            <Button variant="ghost" size="sm" className="text-primary hover:text-primary">
+                              View Details
+                              <ArrowRight className="w-4 h-4 ml-1" />
+                            </Button>
+                          </Link>
+                        ) : (
+                          <Button variant="ghost" size="sm" className="text-primary hover:text-primary">
+                            View Details
+                            <ArrowRight className="w-4 h-4 ml-1" />
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -246,7 +337,7 @@ export default function Shop() {
                       Want Something Custom?
                     </h2>
                     <p className="text-muted-foreground max-w-xl">
-                      Looking for personalized solutions, custom development, or bulk orders? 
+                      Looking for personalized holograms, custom development, or bulk orders? 
                       Let's discuss how I can help with your specific needs.
                     </p>
                   </div>

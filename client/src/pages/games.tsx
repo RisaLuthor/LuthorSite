@@ -3,33 +3,9 @@ import { Footer } from "@/components/footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Gamepad2, Play, Star, BookOpen } from "lucide-react";
+import { Gamepad2, Play, Star, BookOpen, Clock } from "lucide-react";
 
 const games = [
-  {
-    id: "cyber-quest",
-    title: "Cyber Quest",
-    description: "Navigate through a dystopian cyberpunk world as you uncover the secrets of the Luthor.Tech corporation.",
-    genre: "Action RPG",
-    rating: 4.8,
-    status: "Available",
-  },
-  {
-    id: "neural-nexus",
-    title: "Neural Nexus",
-    description: "A puzzle game that challenges your cognitive abilities while training you in AI-assisted problem solving.",
-    genre: "Puzzle",
-    rating: 4.5,
-    status: "Available",
-  },
-  {
-    id: "quantum-realms",
-    title: "Quantum Realms",
-    description: "Explore infinite parallel dimensions in this procedurally generated exploration adventure.",
-    genre: "Adventure",
-    rating: 4.7,
-    status: "Coming Soon",
-  },
   {
     id: "galactic-library",
     title: "Galactic Book Invaders",
@@ -39,6 +15,30 @@ const games = [
     status: "Available",
     icon: BookOpen,
     externalPath: "/galactic-book-quest/index.html",
+  },
+  {
+    id: "cyber-quest",
+    title: "Cyber Quest",
+    description: "Navigate through a dystopian cyberpunk world as you uncover the secrets of the Luthor.Tech corporation.",
+    genre: "Action RPG",
+    rating: null,
+    status: "Coming Soon",
+  },
+  {
+    id: "neural-nexus",
+    title: "Neural Nexus",
+    description: "A puzzle game that challenges your cognitive abilities while training you in AI-assisted problem solving.",
+    genre: "Puzzle",
+    rating: null,
+    status: "Coming Soon",
+  },
+  {
+    id: "quantum-realms",
+    title: "Quantum Realms",
+    description: "Explore infinite parallel dimensions in this procedurally generated exploration adventure.",
+    genre: "Adventure",
+    rating: null,
+    status: "Coming Soon",
   },
 ];
 
@@ -68,7 +68,9 @@ export default function Games() {
             {games.map((game) => (
               <Card
                 key={game.id}
-                className="group bg-card/50 backdrop-blur-xl border-primary/20 transition-all duration-500 hover:-translate-y-1 overflow-visible"
+                className={`group bg-card/50 backdrop-blur-xl border-primary/20 transition-all duration-500 hover:-translate-y-1 overflow-visible ${
+                  game.status === "Coming Soon" ? "opacity-75" : ""
+                }`}
                 style={{
                   boxShadow: "0 0 20px hsl(187 100% 50% / 0.1)",
                 }}
@@ -76,7 +78,7 @@ export default function Games() {
               >
                 <CardContent className="p-6">
                   <div
-                    className="aspect-video rounded-md mb-4 flex items-center justify-center"
+                    className="aspect-video rounded-md mb-4 flex items-center justify-center relative"
                     style={{
                       background: "linear-gradient(135deg, hsl(200 25% 12%) 0%, hsl(200 25% 8%) 100%)",
                       border: "1px solid hsl(187 100% 50% / 0.2)",
@@ -87,6 +89,16 @@ export default function Games() {
                     ) : (
                       <Gamepad2 className="w-12 h-12 text-primary/40" />
                     )}
+                    {game.status === "Coming Soon" && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-md">
+                        <Badge 
+                          className="bg-primary/20 text-primary border-primary/30"
+                        >
+                          <Clock className="w-3 h-3 mr-1" />
+                          Coming Soon
+                        </Badge>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between gap-2 mb-3">
@@ -96,10 +108,12 @@ export default function Games() {
                     >
                       {game.genre}
                     </Badge>
-                    <div className="flex items-center gap-1 text-sm">
-                      <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                      <span className="text-muted-foreground">{game.rating}</span>
-                    </div>
+                    {game.rating && (
+                      <div className="flex items-center gap-1 text-sm">
+                        <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+                        <span className="text-muted-foreground">{game.rating}</span>
+                      </div>
+                    )}
                   </div>
 
                   <h3
@@ -127,22 +141,12 @@ export default function Games() {
                     </Button>
                   ) : (
                     <Button
-                      className={`w-full ${
-                        game.status === "Coming Soon"
-                          ? "bg-muted text-muted-foreground cursor-not-allowed"
-                          : ""
-                      }`}
-                      disabled={game.status === "Coming Soon"}
+                      className="w-full bg-muted text-muted-foreground cursor-not-allowed"
+                      disabled
                       data-testid={`button-play-${game.id}`}
                     >
-                      {game.status === "Coming Soon" ? (
-                        "Coming Soon"
-                      ) : (
-                        <>
-                          <Play className="w-4 h-4 mr-2" />
-                          Play Now
-                        </>
-                      )}
+                      <Clock className="w-4 h-4 mr-2" />
+                      Coming Soon
                     </Button>
                   )}
                 </CardContent>

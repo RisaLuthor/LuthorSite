@@ -223,7 +223,7 @@ export default function Contact() {
                     <div>
                       <h3 className="font-heading font-semibold mb-1">Email</h3>
                       <p className="text-muted-foreground text-sm" data-testid="text-contact-email">
-                        contact@luthor.tech
+                        risaluthor@rmluthor.us
                       </p>
                     </div>
                   </div>

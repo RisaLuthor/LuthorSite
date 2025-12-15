@@ -2,7 +2,7 @@ import { Navigation } from "@/components/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github, Eye, Code, Layers, Globe, Cpu, Brain, Server, Database } from "lucide-react";
+import { ExternalLink, Eye, Code, Globe, Brain, Cpu, Clock, Wrench } from "lucide-react";
 
 const portfolioProjects = [
   {
@@ -14,8 +14,23 @@ const portfolioProjects = [
     tags: ["React", "TypeScript", "AI", "Node.js"],
     icon: Globe,
     featured: true,
+    status: "live",
     links: {
       live: "https://rmluthor.us",
+    },
+  },
+  {
+    id: "rvfixin",
+    title: "RVFIXIN.com",
+    category: "Web Development",
+    description: "RV repair and maintenance resource website providing helpful guides, tips, and information for RV owners and enthusiasts.",
+    image: null,
+    tags: ["Web Development", "Content", "SEO", "Resources"],
+    icon: Wrench,
+    featured: true,
+    status: "live",
+    links: {
+      live: "https://rvfixin.com",
     },
   },
   {
@@ -27,39 +42,7 @@ const portfolioProjects = [
     tags: ["Python", "AI", "Machine Learning", "SQL"],
     icon: Brain,
     featured: true,
-    links: {},
-  },
-  {
-    id: "peoplesoft-modernization",
-    title: "PeopleSoft HCM Modernization",
-    category: "Enterprise Systems",
-    description: "Modernized payroll processes cutting run time by 42%. Integrated MFA and AD sync for enhanced security.",
-    image: null,
-    tags: ["PeopleSoft", "SQL", "Oracle", "Enterprise"],
-    icon: Server,
-    featured: false,
-    links: {},
-  },
-  {
-    id: "dwc-automation",
-    title: "DWC-003 Wage Statement Automation",
-    category: "Enterprise Automation",
-    description: "Automated State of Texas DWC-003 Injury Wage Statement generation for City of Fort Worth.",
-    image: null,
-    tags: ["Automation", "Compliance", "SQL", "Reporting"],
-    icon: Layers,
-    featured: false,
-    links: {},
-  },
-  {
-    id: "ad-sync-integration",
-    title: "Active Directory Integration",
-    category: "Security Integration",
-    description: "AD Sync Snapshot to PDI & Preferred Name PDI to AD integration for enterprise identity management.",
-    image: null,
-    tags: ["Active Directory", "Security", "Integration", "MFA"],
-    icon: Database,
-    featured: false,
+    status: "live",
     links: {},
   },
   {
@@ -71,6 +54,43 @@ const portfolioProjects = [
     tags: ["Machine Learning", "API", "Python", "Governance"],
     icon: Cpu,
     featured: false,
+    status: "live",
+    links: {},
+  },
+  {
+    id: "coming-soon-1",
+    title: "Project Coming Soon",
+    category: "Future Project",
+    description: "An exciting new project is in development. Check back soon for updates on this upcoming addition to the portfolio.",
+    image: null,
+    tags: ["Coming Soon"],
+    icon: Clock,
+    featured: false,
+    status: "coming-soon",
+    links: {},
+  },
+  {
+    id: "coming-soon-2",
+    title: "Project Coming Soon",
+    category: "Future Project",
+    description: "Another innovative project is being developed. Stay tuned for more details on this upcoming work.",
+    image: null,
+    tags: ["Coming Soon"],
+    icon: Clock,
+    featured: false,
+    status: "coming-soon",
+    links: {},
+  },
+  {
+    id: "coming-soon-3",
+    title: "Project Coming Soon",
+    category: "Future Project",
+    description: "More projects are on the way. This space will showcase additional work and achievements.",
+    image: null,
+    tags: ["Coming Soon"],
+    icon: Clock,
+    featured: false,
+    status: "coming-soon",
     links: {},
   },
 ];
@@ -103,7 +123,7 @@ export default function Portfolio() {
                   key={project.id}
                   className={`group bg-card/80 border-primary/20 overflow-hidden hover-elevate transition-all ${
                     project.featured ? "ring-1 ring-primary/30" : ""
-                  }`}
+                  } ${project.status === "coming-soon" ? "opacity-75" : ""}`}
                   style={{ boxShadow: "0 0 20px hsl(187 100% 50% / 0.05)" }}
                   data-testid={`card-portfolio-${project.id}`}
                 >
@@ -135,11 +155,18 @@ export default function Portfolio() {
                         <project.icon className="w-10 h-10 text-primary" />
                       </div>
                     </div>
-                    {project.featured && (
+                    {project.featured && project.status !== "coming-soon" && (
                       <Badge 
                         className="absolute top-4 right-4 bg-primary/90 text-primary-foreground"
                       >
                         Featured
+                      </Badge>
+                    )}
+                    {project.status === "coming-soon" && (
+                      <Badge 
+                        className="absolute top-4 right-4 bg-muted text-muted-foreground"
+                      >
+                        Coming Soon
                       </Badge>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-card/90 via-transparent to-transparent" />
@@ -199,14 +226,16 @@ export default function Portfolio() {
                           </Button>
                         </a>
                       )}
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        className="text-muted-foreground hover:text-primary"
-                      >
-                        <Code className="w-4 h-4 mr-1" />
-                        Details
-                      </Button>
+                      {project.status !== "coming-soon" && (
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          className="text-muted-foreground hover:text-primary"
+                        >
+                          <Code className="w-4 h-4 mr-1" />
+                          Details
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

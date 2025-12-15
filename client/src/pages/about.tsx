@@ -128,7 +128,7 @@ export default function About() {
                     </div>
                     <div className="flex items-center gap-3">
                       <Phone className="w-4 h-4 text-primary" />
-                      <span className="text-sm"><span className="text-muted-foreground">Phone:</span> 214-897-0041</span>
+                      <span className="text-sm"><span className="text-muted-foreground">Phone:</span> 940-537-0237</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <Briefcase className="w-4 h-4 text-primary" />
