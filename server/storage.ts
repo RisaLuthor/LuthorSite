@@ -3,6 +3,8 @@ import {
   chatMessages,
   contactSubmissions,
   hologramUploads,
+  kieranProfiles,
+  kieranMemories,
   type User, 
   type UpsertUser, 
   type ChatMessage, 
@@ -10,10 +12,14 @@ import {
   type ContactSubmission,
   type InsertContactSubmission,
   type HologramUpload,
-  type InsertHologramUpload
+  type InsertHologramUpload,
+  type KieranProfile,
+  type InsertKieranProfile,
+  type KieranMemory,
+  type InsertKieranMemory
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, isNull } from "drizzle-orm";
+import { eq, isNull, desc } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -28,6 +34,11 @@ export interface IStorage {
   createHologramUpload(upload: InsertHologramUpload): Promise<HologramUpload>;
   getHologramUploads(userId?: string): Promise<HologramUpload[]>;
   updateHologramStatus(id: string, status: "pending" | "processing" | "completed" | "failed", downloadUrl?: string): Promise<HologramUpload | undefined>;
+  getOrCreateKieranProfile(email: string, userType: "personal" | "enterprise", userId?: string): Promise<KieranProfile>;
+  updateKieranProfile(profileId: string, updates: Partial<InsertKieranProfile>): Promise<KieranProfile | undefined>;
+  addKieranMemory(memory: InsertKieranMemory): Promise<KieranMemory>;
+  getKieranMemories(profileId: string, limit?: number): Promise<KieranMemory[]>;
+  updateMemoryImportance(memoryId: string, importance: number): Promise<KieranMemory | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -134,6 +145,81 @@ export class DatabaseStorage implements IStorage {
       .update(hologramUploads)
       .set({ status, downloadUrl })
       .where(eq(hologramUploads.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getOrCreateKieranProfile(
+    email: string, 
+    userType: "personal" | "enterprise",
+    userId?: string
+  ): Promise<KieranProfile> {
+    const [existing] = await db
+      .select()
+      .from(kieranProfiles)
+      .where(eq(kieranProfiles.email, email));
+    
+    if (existing) {
+      return existing;
+    }
+
+    const isCreator = email.toLowerCase() === "risaluthor@rmluthor.us";
+    
+    const [profile] = await db
+      .insert(kieranProfiles)
+      .values({
+        id: randomUUID(),
+        email,
+        userId,
+        userType,
+        isCreator,
+        toneSettings: userType === "enterprise" 
+          ? { formality: 80, empathy: 40, directness: 80 }
+          : { formality: 30, empathy: 70, directness: 50 },
+        interactionStyle: userType === "enterprise" ? "professional" : "friendly",
+      })
+      .returning();
+    
+    return profile;
+  }
+
+  async updateKieranProfile(
+    profileId: string, 
+    updates: Partial<InsertKieranProfile>
+  ): Promise<KieranProfile | undefined> {
+    const [updated] = await db
+      .update(kieranProfiles)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(kieranProfiles.id, profileId))
+      .returning();
+    return updated;
+  }
+
+  async addKieranMemory(memory: InsertKieranMemory): Promise<KieranMemory> {
+    const [newMemory] = await db
+      .insert(kieranMemories)
+      .values({
+        id: randomUUID(),
+        ...memory,
+      })
+      .returning();
+    return newMemory;
+  }
+
+  async getKieranMemories(profileId: string, limit: number = 20): Promise<KieranMemory[]> {
+    return await db
+      .select()
+      .from(kieranMemories)
+      .where(eq(kieranMemories.profileId, profileId))
+      .orderBy(desc(kieranMemories.importance), desc(kieranMemories.createdAt))
+      .limit(limit);
+  }
+
+  async updateMemoryImportance(memoryId: string, importance: number): Promise<KieranMemory | undefined> {
+    const [updated] = await db
+      .update(kieranMemories)
+      .set({ importance })
+      .where(eq(kieranMemories.id, memoryId))
       .returning();
     return updated;
   }

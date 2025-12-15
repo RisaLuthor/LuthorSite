@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, boolean, timestamp, jsonb, index } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean, timestamp, jsonb, index, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -111,3 +111,49 @@ export const insertHologramUploadSchema = createInsertSchema(hologramUploads).pi
 
 export type InsertHologramUpload = z.infer<typeof insertHologramUploadSchema>;
 export type HologramUpload = typeof hologramUploads.$inferSelect;
+
+// Kieran AI Personalization - Profiles
+export const kieranProfiles = pgTable("kieran_profiles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id"),
+  email: varchar("email").unique().notNull(),
+  userType: varchar("user_type").$type<"personal" | "enterprise">().default("personal"),
+  isCreator: boolean("is_creator").default(false),
+  toneSettings: jsonb("tone_settings").$type<{
+    formality: number;
+    empathy: number;
+    directness: number;
+  }>().default({ formality: 50, empathy: 50, directness: 50 }),
+  knowledgeFocus: text("knowledge_focus").array(),
+  interactionStyle: varchar("interaction_style").default("balanced"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertKieranProfileSchema = createInsertSchema(kieranProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertKieranProfile = z.infer<typeof insertKieranProfileSchema>;
+export type KieranProfile = typeof kieranProfiles.$inferSelect;
+
+// Kieran AI Personalization - Memories
+export const kieranMemories = pgTable("kieran_memories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  profileId: varchar("profile_id").notNull(),
+  memoryType: varchar("memory_type").$type<"preference" | "interaction" | "milestone">().default("interaction"),
+  content: text("content").notNull(),
+  importance: integer("importance").default(5),
+  sourceMessageIds: text("source_message_ids").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertKieranMemorySchema = createInsertSchema(kieranMemories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertKieranMemory = z.infer<typeof insertKieranMemorySchema>;
+export type KieranMemory = typeof kieranMemories.$inferSelect;
