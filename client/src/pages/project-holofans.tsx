@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { 
   ArrowLeft, Download, Upload, Search, Mic, MicOff, 
   Disc3, Sparkles, Image, MessageSquare, Volume2,
@@ -244,6 +244,163 @@ const colorGradients: Record<string, string> = {
   "Neon Pink": "from-pink-400 to-rose-600",
   "Electric Blue": "from-blue-400 to-indigo-600",
 };
+
+const colorHex: Record<string, { primary: string; secondary: string; glow: string }> = {
+  Cyan: { primary: "#00FFFF", secondary: "#0099CC", glow: "rgba(0, 255, 255, 0.6)" },
+  Magenta: { primary: "#FF00FF", secondary: "#9900CC", glow: "rgba(255, 0, 255, 0.6)" },
+  Gold: { primary: "#FFD700", secondary: "#CC9900", glow: "rgba(255, 215, 0, 0.6)" },
+  Green: { primary: "#00FF00", secondary: "#009900", glow: "rgba(0, 255, 0, 0.6)" },
+  Blue: { primary: "#0066FF", secondary: "#003399", glow: "rgba(0, 102, 255, 0.6)" },
+  Red: { primary: "#FF3333", secondary: "#990000", glow: "rgba(255, 51, 51, 0.6)" },
+  Purple: { primary: "#9933FF", secondary: "#6600CC", glow: "rgba(153, 51, 255, 0.6)" },
+  Orange: { primary: "#FF6600", secondary: "#CC3300", glow: "rgba(255, 102, 0, 0.6)" },
+  White: { primary: "#FFFFFF", secondary: "#CCCCCC", glow: "rgba(255, 255, 255, 0.6)" },
+  Rainbow: { primary: "#FF0080", secondary: "#8000FF", glow: "rgba(255, 0, 128, 0.6)" },
+  "Neon Pink": { primary: "#FF1493", secondary: "#C71585", glow: "rgba(255, 20, 147, 0.6)" },
+  "Electric Blue": { primary: "#00BFFF", secondary: "#1E90FF", glow: "rgba(0, 191, 255, 0.6)" },
+};
+
+function HologramPreview({ 
+  name, 
+  color, 
+  style, 
+  size = 120 
+}: { 
+  name: string; 
+  color: string; 
+  style: string; 
+  size?: number;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number>(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const drawHologram = useCallback((timestamp: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const colors = colorHex[color] || colorHex.Cyan;
+    const displayName = name.split(" ").slice(2).join(" ");
+    const centerX = size / 2;
+    const centerY = size / 2;
+    const radius = size * 0.42;
+
+    ctx.clearRect(0, 0, size, size);
+
+    ctx.fillStyle = "rgba(0, 0, 0, 0.9)";
+    ctx.fillRect(0, 0, size, size);
+
+    const animFactor = isHovered ? Math.sin(timestamp / 200) * 0.1 + 1 : 1;
+    const glowSize = isHovered ? 25 : 15;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius * animFactor, 0, Math.PI * 2);
+    ctx.shadowColor = colors.glow;
+    ctx.shadowBlur = glowSize;
+    ctx.strokeStyle = colors.primary;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius * 0.85 * animFactor, 0, Math.PI * 2);
+    ctx.strokeStyle = colors.secondary + "80";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.restore();
+
+    const numLines = 8;
+    for (let i = 0; i < numLines; i++) {
+      const angle = (i / numLines) * Math.PI * 2 + (isHovered ? timestamp / 2000 : 0);
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(
+        centerX + Math.cos(angle) * radius * 0.7,
+        centerY + Math.sin(angle) * radius * 0.7
+      );
+      ctx.strokeStyle = colors.primary + "30";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    ctx.save();
+    ctx.fillStyle = colors.primary;
+    ctx.shadowColor = colors.glow;
+    ctx.shadowBlur = isHovered ? 15 : 8;
+    ctx.font = `bold ${Math.min(size / 8, 14)}px Arial`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    const words = displayName.split(" ");
+    if (words.length <= 2) {
+      ctx.fillText(displayName, centerX, centerY);
+    } else {
+      const lineHeight = size / 7;
+      const startY = centerY - lineHeight / 2;
+      ctx.fillText(words.slice(0, 2).join(" "), centerX, startY);
+      ctx.font = `${Math.min(size / 10, 11)}px Arial`;
+      ctx.fillText(words.slice(2).join(" "), centerX, startY + lineHeight);
+    }
+    ctx.restore();
+
+    ctx.save();
+    ctx.font = `${Math.min(size / 12, 9)}px Arial`;
+    ctx.fillStyle = colors.secondary + "AA";
+    ctx.textAlign = "center";
+    ctx.fillText(style.toUpperCase(), centerX, size - 8);
+    ctx.restore();
+
+    if (isHovered) {
+      animationRef.current = requestAnimationFrame(drawHologram);
+    }
+  }, [name, color, style, size, isHovered]);
+
+  useEffect(() => {
+    drawHologram(0);
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [drawHologram]);
+
+  useEffect(() => {
+    if (isHovered) {
+      const animate = (timestamp: number) => {
+        drawHologram(timestamp);
+      };
+      animationRef.current = requestAnimationFrame(animate);
+    }
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isHovered, drawHologram]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={size}
+      height={size}
+      className="rounded-lg transition-transform duration-300"
+      style={{ 
+        width: "100%", 
+        height: "auto",
+        aspectRatio: "1/1"
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    />
+  );
+}
 
 export default function ProjectHolofans() {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -552,27 +709,29 @@ export default function ProjectHolofans() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
-                      {featuredHolograms.map((holo) => {
-                        const Icon = categoryIcons[holo.category] || Sparkles;
-                        return (
-                          <div
-                            key={holo.id}
-                            className="group cursor-pointer"
-                            onClick={() => handleDownload(holo)}
-                            data-testid={`featured-${holo.id}`}
+                      {featuredHolograms.map((holo) => (
+                        <div
+                          key={holo.id}
+                          className="group cursor-pointer"
+                          onClick={() => handleDownload(holo)}
+                          data-testid={`featured-${holo.id}`}
+                        >
+                          <div 
+                            className="mb-2 transition-all duration-300 group-hover:scale-105"
+                            style={{ boxShadow: "0 0 20px hsl(45 93% 50% / 0.3)" }}
                           >
-                            <div
-                              className={`aspect-square rounded-lg bg-gradient-to-br ${colorGradients[holo.color]} flex items-center justify-center mb-2 transition-all duration-300 group-hover:scale-105`}
-                              style={{ boxShadow: "0 0 20px hsl(45 93% 50% / 0.3)" }}
-                            >
-                              <Icon className="w-8 h-8 text-white/90" />
-                            </div>
-                            <p className="text-xs text-center truncate text-muted-foreground">
-                              {holo.name.split(" ").slice(2).join(" ")}
-                            </p>
+                            <HologramPreview 
+                              name={holo.name} 
+                              color={holo.color} 
+                              style={holo.style}
+                              size={100}
+                            />
                           </div>
-                        );
-                      })}
+                          <p className="text-xs text-center truncate text-muted-foreground">
+                            {holo.name.split(" ").slice(2).join(" ")}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
@@ -636,40 +795,42 @@ export default function ProjectHolofans() {
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {filteredHolograms.slice(0, 50).map((holo) => {
-                      const Icon = categoryIcons[holo.category] || Sparkles;
-                      return (
-                        <Card
-                          key={holo.id}
-                          className="group bg-card/50 backdrop-blur-xl border-primary/20 cursor-pointer transition-all duration-300 hover:-translate-y-1 overflow-visible"
-                          onClick={() => handleDownload(holo)}
-                          data-testid={`holo-${holo.id}`}
-                        >
-                          <CardContent className="p-3">
-                            <div
-                              className={`aspect-square rounded-lg bg-gradient-to-br ${colorGradients[holo.color]} flex items-center justify-center mb-2 transition-all duration-300 group-hover:scale-105`}
-                              style={{ 
-                                boxShadow: `0 0 15px ${holo.color === "Cyan" ? "hsl(187 100% 50% / 0.3)" : "hsl(280 100% 50% / 0.2)"}` 
-                              }}
-                            >
-                              <Icon className="w-8 h-8 text-white/90" />
-                            </div>
-                            <p className="text-xs font-medium truncate mb-1" title={holo.name}>
-                              {holo.name.split(" ").slice(2).join(" ")}
-                            </p>
-                            <div className="flex items-center justify-between">
-                              <Badge variant="secondary" className="text-[10px] px-1.5">
-                                {holo.style}
-                              </Badge>
-                              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                <Download className="w-3 h-3" />
-                                {holo.downloads > 1000 ? `${(holo.downloads / 1000).toFixed(1)}k` : holo.downloads}
-                              </span>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
+                    {filteredHolograms.slice(0, 50).map((holo) => (
+                      <Card
+                        key={holo.id}
+                        className="group bg-card/50 backdrop-blur-xl border-primary/20 cursor-pointer transition-all duration-300 hover:-translate-y-1 overflow-visible"
+                        onClick={() => handleDownload(holo)}
+                        data-testid={`holo-${holo.id}`}
+                      >
+                        <CardContent className="p-3">
+                          <div
+                            className="mb-2 transition-all duration-300 group-hover:scale-105"
+                            style={{ 
+                              boxShadow: `0 0 15px ${holo.color === "Cyan" ? "hsl(187 100% 50% / 0.3)" : "hsl(280 100% 50% / 0.2)"}` 
+                            }}
+                          >
+                            <HologramPreview 
+                              name={holo.name} 
+                              color={holo.color} 
+                              style={holo.style}
+                              size={120}
+                            />
+                          </div>
+                          <p className="text-xs font-medium truncate mb-1" title={holo.name}>
+                            {holo.name.split(" ").slice(2).join(" ")}
+                          </p>
+                          <div className="flex items-center justify-between gap-1">
+                            <Badge variant="secondary" className="text-[10px] px-1.5">
+                              {holo.style}
+                            </Badge>
+                            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              <Download className="w-3 h-3" />
+                              {holo.downloads > 1000 ? `${(holo.downloads / 1000).toFixed(1)}k` : holo.downloads}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
 
                   {filteredHolograms.length > 50 && (
