@@ -13,7 +13,8 @@ import {
   Disc3, Sparkles, Image, MessageSquare, Volume2,
   Heart, Star, Zap, Flame, Cloud, Moon, Sun, Music,
   Gamepad2, Gift, Coffee, Camera, Rocket, Globe,
-  Crown, Diamond, Shield, Target, Award, Smile
+  Crown, Diamond, Shield, Target, Award, Smile,
+  Play, Pause, X, Eye
 } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -406,14 +407,17 @@ export default function ProjectHolofans() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [customMessage, setCustomMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState("Cyan");
   const [selectedStyle, setSelectedStyle] = useState("Spinning");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const audioPlayerRef = useRef<HTMLAudioElement>(null);
   const { toast } = useToast();
 
   const filteredHolograms = allHolograms.filter((holo) => {
@@ -435,11 +439,27 @@ export default function ProjectHolofans() {
         });
         return;
       }
+      if (imagePreviewUrl) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreviewUrl(previewUrl);
       setUploadedImage(file);
       toast({
         title: "Image uploaded",
         description: `${file.name} ready for hologram conversion`,
       });
+    }
+  };
+
+  const clearImage = () => {
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl);
+    }
+    setImagePreviewUrl(null);
+    setUploadedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -455,12 +475,17 @@ export default function ProjectHolofans() {
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        setAudioBlob(audioBlob);
+        const newAudioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        if (audioUrl) {
+          URL.revokeObjectURL(audioUrl);
+        }
+        const newAudioUrl = URL.createObjectURL(newAudioBlob);
+        setAudioBlob(newAudioBlob);
+        setAudioUrl(newAudioUrl);
         stream.getTracks().forEach((track) => track.stop());
         toast({
           title: "Recording saved",
-          description: "Voice message ready for hologram",
+          description: "Voice message ready - click play to preview",
         });
       };
 
@@ -483,6 +508,31 @@ export default function ProjectHolofans() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+    }
+  };
+
+  const clearAudio = () => {
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+    }
+    setAudioBlob(null);
+    setAudioUrl(null);
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.pause();
+      audioPlayerRef.current.currentTime = 0;
+    }
+  };
+
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+
+  const toggleAudioPlayback = () => {
+    if (audioPlayerRef.current) {
+      if (isPlayingAudio) {
+        audioPlayerRef.current.pause();
+      } else {
+        audioPlayerRef.current.play();
+      }
+      setIsPlayingAudio(!isPlayingAudio);
     }
   };
 
@@ -863,37 +913,68 @@ export default function ProjectHolofans() {
                           <Image className="w-4 h-4" />
                           Upload Image
                         </Label>
-                        <div
-                          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all ${
-                            uploadedImage 
-                              ? "border-green-500/50 bg-green-500/10" 
-                              : "border-primary/30 hover:border-primary/50 hover:bg-primary/5"
-                          }`}
-                          onClick={() => fileInputRef.current?.click()}
-                          data-testid="upload-dropzone"
-                        >
-                          <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageUpload}
-                            className="hidden"
-                            data-testid="input-file-upload"
-                          />
-                          {uploadedImage ? (
-                            <div className="space-y-2">
-                              <Image className="w-12 h-12 mx-auto text-green-400" />
-                              <p className="text-green-400 font-medium">{uploadedImage.name}</p>
-                              <p className="text-sm text-muted-foreground">Click to change</p>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          data-testid="input-file-upload"
+                        />
+                        {imagePreviewUrl ? (
+                          <div className="space-y-3">
+                            <div 
+                              className="relative rounded-lg overflow-hidden border-2 border-green-500/50 bg-black"
+                              style={{ boxShadow: "0 0 20px hsl(187 100% 50% / 0.2)" }}
+                            >
+                              <img 
+                                src={imagePreviewUrl} 
+                                alt="Upload preview" 
+                                className="w-full h-48 object-contain"
+                                data-testid="image-preview"
+                              />
+                              <div className="absolute top-2 right-2 flex gap-2">
+                                <Button
+                                  size="icon"
+                                  variant="outline"
+                                  className="h-8 w-8 bg-background/80 backdrop-blur-sm"
+                                  onClick={() => fileInputRef.current?.click()}
+                                  data-testid="button-change-image"
+                                >
+                                  <Upload className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="destructive"
+                                  className="h-8 w-8"
+                                  onClick={clearImage}
+                                  data-testid="button-remove-image"
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </div>
+                              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                                <p className="text-green-400 text-sm font-medium truncate">{uploadedImage?.name}</p>
+                              </div>
                             </div>
-                          ) : (
+                            <p className="text-xs text-green-400 flex items-center gap-1">
+                              <Eye className="w-3 h-3" />
+                              Image preview loaded - check the hologram preview below
+                            </p>
+                          </div>
+                        ) : (
+                          <div
+                            className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all border-primary/30 hover:border-primary/50 hover:bg-primary/5"
+                            onClick={() => fileInputRef.current?.click()}
+                            data-testid="upload-dropzone"
+                          >
                             <div className="space-y-2">
                               <Upload className="w-12 h-12 mx-auto text-muted-foreground" />
                               <p className="text-muted-foreground">Click or drag to upload image</p>
                               <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-3">
@@ -918,34 +999,96 @@ export default function ProjectHolofans() {
                           <Volume2 className="w-4 h-4" />
                           Voice Recording
                         </Label>
-                        <div className="flex items-center gap-4">
-                          <Button
-                            variant={isRecording ? "destructive" : "outline"}
-                            onClick={isRecording ? stopRecording : startRecording}
-                            className="gap-2"
-                            data-testid="button-record-voice"
-                          >
-                            {isRecording ? (
-                              <>
-                                <MicOff className="w-4 h-4" />
-                                Stop Recording
-                              </>
-                            ) : (
-                              <>
-                                <Mic className="w-4 h-4" />
-                                Record Voice
-                              </>
-                            )}
-                          </Button>
-                          {audioBlob && (
-                            <Badge variant="outline" className="border-green-500/50 text-green-400">
-                              Voice recorded
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Record a voice message to play with your hologram (max 30 seconds)
-                        </p>
+                        {audioUrl ? (
+                          <div className="space-y-3">
+                            <div 
+                              className="rounded-lg border-2 border-green-500/50 bg-green-500/5 p-4"
+                              style={{ boxShadow: "0 0 15px hsl(120 100% 40% / 0.1)" }}
+                            >
+                              <div className="flex items-center gap-3">
+                                <Button
+                                  size="icon"
+                                  variant="outline"
+                                  className="h-12 w-12 rounded-full border-green-500/50"
+                                  onClick={toggleAudioPlayback}
+                                  data-testid="button-play-audio"
+                                >
+                                  {isPlayingAudio ? (
+                                    <Pause className="w-5 h-5 text-green-400" />
+                                  ) : (
+                                    <Play className="w-5 h-5 text-green-400" />
+                                  )}
+                                </Button>
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium text-green-400">Voice Recording Ready</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {isPlayingAudio ? "Playing..." : "Click play to preview your recording"}
+                                  </p>
+                                </div>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8"
+                                  onClick={clearAudio}
+                                  data-testid="button-remove-audio"
+                                >
+                                  <X className="w-4 h-4 text-muted-foreground" />
+                                </Button>
+                              </div>
+                              <audio 
+                                ref={audioPlayerRef}
+                                src={audioUrl}
+                                onEnded={() => setIsPlayingAudio(false)}
+                                className="hidden"
+                                data-testid="audio-player"
+                              />
+                            </div>
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                clearAudio();
+                                startRecording();
+                              }}
+                              className="gap-2"
+                              data-testid="button-rerecord"
+                            >
+                              <Mic className="w-4 h-4" />
+                              Record New
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-4">
+                              <Button
+                                variant={isRecording ? "destructive" : "outline"}
+                                onClick={isRecording ? stopRecording : startRecording}
+                                className="gap-2"
+                                data-testid="button-record-voice"
+                              >
+                                {isRecording ? (
+                                  <>
+                                    <MicOff className="w-4 h-4" />
+                                    Stop Recording
+                                  </>
+                                ) : (
+                                  <>
+                                    <Mic className="w-4 h-4" />
+                                    Record Voice
+                                  </>
+                                )}
+                              </Button>
+                              {isRecording && (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                                  <span className="text-sm text-red-400">Recording...</span>
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Record a voice message to play with your hologram (max 30 seconds)
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -991,25 +1134,92 @@ export default function ProjectHolofans() {
 
                       <Card className="bg-primary/5 border-primary/20">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-heading">Preview</CardTitle>
+                          <CardTitle className="text-sm font-heading flex items-center gap-2">
+                            <Eye className="w-4 h-4" />
+                            Live Hologram Preview
+                          </CardTitle>
                         </CardHeader>
-                        <CardContent>
-                          <div
-                            className={`aspect-square max-w-[200px] mx-auto rounded-lg bg-gradient-to-br ${colorGradients[selectedColor]} flex items-center justify-center`}
+                        <CardContent className="space-y-4">
+                          <div 
+                            className="relative aspect-square max-w-[250px] mx-auto rounded-full bg-black overflow-hidden"
                             style={{ 
-                              boxShadow: `0 0 30px ${selectedColor === "Cyan" ? "hsl(187 100% 50% / 0.4)" : "hsl(280 100% 50% / 0.3)"}`,
+                              boxShadow: `0 0 40px ${colorHex[selectedColor]?.glow || "rgba(0, 255, 255, 0.4)"}`,
                               animation: selectedStyle === "Spinning" ? "spin 3s linear infinite" : 
-                                         selectedStyle === "Pulsing" ? "pulse 2s ease-in-out infinite" : "none"
+                                         selectedStyle === "Pulsing" ? "pulse 2s ease-in-out infinite" : 
+                                         selectedStyle === "Floating" ? "bounce 2s ease-in-out infinite" : "none"
                             }}
                           >
-                            {uploadedImage ? (
-                              <Image className="w-16 h-16 text-white/90" />
-                            ) : customMessage ? (
-                              <p className="text-white font-bold text-center p-4 text-sm">
-                                {customMessage.slice(0, 20)}...
+                            <div 
+                              className="absolute inset-0 rounded-full"
+                              style={{
+                                border: `3px solid ${colorHex[selectedColor]?.primary || "#00FFFF"}`,
+                                boxShadow: `inset 0 0 30px ${colorHex[selectedColor]?.glow || "rgba(0, 255, 255, 0.3)"}`,
+                              }}
+                            />
+                            <div 
+                              className="absolute inset-4 rounded-full border border-dashed opacity-50"
+                              style={{ borderColor: colorHex[selectedColor]?.secondary || "#0099CC" }}
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center p-6">
+                              {imagePreviewUrl ? (
+                                <img 
+                                  src={imagePreviewUrl} 
+                                  alt="Hologram preview" 
+                                  className="w-full h-full object-contain rounded-full"
+                                  style={{
+                                    filter: `drop-shadow(0 0 10px ${colorHex[selectedColor]?.glow || "rgba(0, 255, 255, 0.5)"})`,
+                                  }}
+                                  data-testid="hologram-image-preview"
+                                />
+                              ) : customMessage ? (
+                                <div 
+                                  className="text-center p-2"
+                                  style={{
+                                    color: colorHex[selectedColor]?.primary || "#00FFFF",
+                                    textShadow: `0 0 10px ${colorHex[selectedColor]?.glow || "rgba(0, 255, 255, 0.8)"}`,
+                                  }}
+                                >
+                                  <p className="font-bold text-lg leading-tight">
+                                    {customMessage.length > 50 ? customMessage.slice(0, 50) + "..." : customMessage}
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className="text-center">
+                                  <Sparkles 
+                                    className="w-16 h-16 mx-auto mb-2"
+                                    style={{ 
+                                      color: colorHex[selectedColor]?.primary || "#00FFFF",
+                                      filter: `drop-shadow(0 0 8px ${colorHex[selectedColor]?.glow || "rgba(0, 255, 255, 0.8)"})`,
+                                    }}
+                                  />
+                                  <p 
+                                    className="text-xs opacity-70"
+                                    style={{ color: colorHex[selectedColor]?.secondary || "#0099CC" }}
+                                  >
+                                    Upload image or enter message
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                            <div 
+                              className="absolute bottom-4 left-0 right-0 text-center"
+                              style={{ 
+                                color: colorHex[selectedColor]?.primary || "#00FFFF",
+                                textShadow: `0 0 5px ${colorHex[selectedColor]?.glow || "rgba(0, 255, 255, 0.8)"}`,
+                              }}
+                            >
+                              <p className="text-xs font-medium uppercase tracking-wider">{selectedStyle}</p>
+                            </div>
+                          </div>
+                          <div className="text-center space-y-1">
+                            <p className="text-xs text-muted-foreground">
+                              This preview shows how your hologram will appear on the display fan
+                            </p>
+                            {audioUrl && (
+                              <p className="text-xs text-green-400 flex items-center justify-center gap-1">
+                                <Volume2 className="w-3 h-3" />
+                                Voice recording will play with this hologram
                               </p>
-                            ) : (
-                              <Sparkles className="w-16 h-16 text-white/90" />
                             )}
                           </div>
                         </CardContent>
