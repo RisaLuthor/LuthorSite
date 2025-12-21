@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertChatMessageSchema, insertContactSubmissionSchema, insertHologramUploadSchema, insertWorkUpdateSchema, insertBlogCommentSchema, insertPrintingProjectSchema, type KieranProfile, type KieranMemory } from "@shared/schema";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
 import OpenAI from "openai";
 import { getCalendarEvents } from "./googleCalendar";
 
@@ -391,7 +391,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/blog/updates", isAuthenticated, async (req: any, res) => {
+  app.post("/api/blog/updates", isAdmin, async (req: any, res) => {
     try {
       const result = insertWorkUpdateSchema.safeParse(req.body);
       if (!result.success) {
@@ -402,6 +402,63 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Work update error:", error);
       res.status(500).json({ error: "Failed to create work update" });
+    }
+  });
+
+  // Check if current user is admin
+  app.get("/api/auth/is-admin", async (req: any, res) => {
+    const user = req.user as any;
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const userEmail = user?.claims?.email;
+    const isAdmin = !!adminEmail && userEmail === adminEmail;
+    res.json({ isAdmin });
+  });
+
+  // Work Update Reactions
+  app.get("/api/blog/updates/:id/reactions", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const reactions = await storage.getReactionsForUpdate(id);
+      res.json(reactions);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch reactions" });
+    }
+  });
+
+  app.post("/api/blog/updates/:id/reactions", async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { reactionType, visitorId } = req.body;
+      
+      if (!["like", "love", "dislike"].includes(reactionType)) {
+        return res.status(400).json({ error: "Invalid reaction type" });
+      }
+      if (!visitorId) {
+        return res.status(400).json({ error: "Visitor ID required" });
+      }
+      
+      await storage.toggleReaction(id, visitorId, reactionType);
+      const reactions = await storage.getReactionsForUpdate(id);
+      res.json(reactions);
+    } catch (error) {
+      console.error("Reaction error:", error);
+      res.status(500).json({ error: "Failed to toggle reaction" });
+    }
+  });
+
+  app.get("/api/blog/updates/:id/my-reaction", async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { visitorId } = req.query;
+      
+      if (!visitorId) {
+        return res.json({ reaction: null });
+      }
+      
+      const reaction = await storage.getUserReaction(id, visitorId as string);
+      res.json({ reaction: reaction?.reactionType || null });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch reaction" });
     }
   });
 
@@ -444,7 +501,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/blog/printing-projects", isAuthenticated, async (req: any, res) => {
+  app.post("/api/blog/printing-projects", isAdmin, async (req: any, res) => {
     try {
       const result = insertPrintingProjectSchema.safeParse(req.body);
       if (!result.success) {

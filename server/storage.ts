@@ -8,6 +8,7 @@ import {
   workUpdates,
   blogComments,
   printingProjects,
+  workUpdateReactions,
   type User, 
   type UpsertUser, 
   type ChatMessage, 
@@ -25,10 +26,12 @@ import {
   type BlogComment,
   type InsertBlogComment,
   type PrintingProject,
-  type InsertPrintingProject
+  type InsertPrintingProject,
+  type WorkUpdateReaction,
+  type InsertWorkUpdateReaction
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, isNull, desc } from "drizzle-orm";
+import { eq, isNull, desc, and, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -57,6 +60,10 @@ export interface IStorage {
   // Printing Projects
   getPrintingProjects(): Promise<PrintingProject[]>;
   createPrintingProject(project: InsertPrintingProject): Promise<PrintingProject>;
+  // Work Update Reactions
+  getReactionsForUpdate(workUpdateId: string): Promise<{ like: number; love: number; dislike: number }>;
+  getUserReaction(workUpdateId: string, visitorId: string): Promise<WorkUpdateReaction | undefined>;
+  toggleReaction(workUpdateId: string, visitorId: string, reactionType: "like" | "love" | "dislike"): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -315,6 +322,65 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return newProject;
+  }
+
+  // Work Update Reactions
+  async getReactionsForUpdate(workUpdateId: string): Promise<{ like: number; love: number; dislike: number }> {
+    const reactions = await db
+      .select({
+        reactionType: workUpdateReactions.reactionType,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(workUpdateReactions)
+      .where(eq(workUpdateReactions.workUpdateId, workUpdateId))
+      .groupBy(workUpdateReactions.reactionType);
+
+    const counts = { like: 0, love: 0, dislike: 0 };
+    reactions.forEach((r) => {
+      if (r.reactionType === "like") counts.like = r.count;
+      else if (r.reactionType === "love") counts.love = r.count;
+      else if (r.reactionType === "dislike") counts.dislike = r.count;
+    });
+    return counts;
+  }
+
+  async getUserReaction(workUpdateId: string, visitorId: string): Promise<WorkUpdateReaction | undefined> {
+    const [reaction] = await db
+      .select()
+      .from(workUpdateReactions)
+      .where(
+        and(
+          eq(workUpdateReactions.workUpdateId, workUpdateId),
+          eq(workUpdateReactions.visitorId, visitorId)
+        )
+      );
+    return reaction;
+  }
+
+  async toggleReaction(workUpdateId: string, visitorId: string, reactionType: "like" | "love" | "dislike"): Promise<void> {
+    const existing = await this.getUserReaction(workUpdateId, visitorId);
+    
+    if (existing) {
+      if (existing.reactionType === reactionType) {
+        await db
+          .delete(workUpdateReactions)
+          .where(eq(workUpdateReactions.id, existing.id));
+      } else {
+        await db
+          .update(workUpdateReactions)
+          .set({ reactionType })
+          .where(eq(workUpdateReactions.id, existing.id));
+      }
+    } else {
+      await db
+        .insert(workUpdateReactions)
+        .values({
+          id: randomUUID(),
+          workUpdateId,
+          visitorId,
+          reactionType,
+        });
+    }
   }
 }
 

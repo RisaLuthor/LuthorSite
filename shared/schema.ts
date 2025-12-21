@@ -199,6 +199,23 @@ export const insertBlogCommentSchema = createInsertSchema(blogComments).omit({
 export type InsertBlogComment = z.infer<typeof insertBlogCommentSchema>;
 export type BlogComment = typeof blogComments.$inferSelect;
 
+// Work Update Reactions (like, love, dislike)
+export const workUpdateReactions = pgTable("work_update_reactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  workUpdateId: varchar("work_update_id").notNull(),
+  visitorId: varchar("visitor_id").notNull(),
+  reactionType: varchar("reaction_type").$type<"like" | "love" | "dislike">().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertWorkUpdateReactionSchema = createInsertSchema(workUpdateReactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertWorkUpdateReaction = z.infer<typeof insertWorkUpdateReactionSchema>;
+export type WorkUpdateReaction = typeof workUpdateReactions.$inferSelect;
+
 // 3D Printing Projects
 export const printingProjects = pgTable("printing_projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

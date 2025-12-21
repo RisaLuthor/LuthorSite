@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,9 +10,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, ChevronLeft, ChevronRight, MessageSquare, Printer, Cpu, Send, Clock, User, HardDrive, Box } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, MessageSquare, Printer, Cpu, Send, Clock, User, HardDrive, Box, ThumbsUp, Heart, ThumbsDown } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns";
 import type { WorkUpdate, BlogComment, PrintingProject } from "@shared/schema";
+
+function getVisitorId(): string {
+  let visitorId = localStorage.getItem('visitorId');
+  if (!visitorId) {
+    visitorId = 'visitor-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+    localStorage.setItem('visitorId', visitorId);
+  }
+  return visitorId;
+}
 
 interface CalendarEvent {
   id: string;
@@ -136,7 +145,72 @@ function CalendarSection() {
   );
 }
 
-function WorkUpdatesSection() {
+function ReactionButtons({ updateId }: { updateId: string }) {
+  const visitorId = getVisitorId();
+  const { toast } = useToast();
+
+  const { data: reactions = { like: 0, love: 0, dislike: 0 } } = useQuery<{ like: number; love: number; dislike: number }>({
+    queryKey: ['/api/blog/updates', updateId, 'reactions'],
+    queryFn: () => fetch(`/api/blog/updates/${updateId}/reactions`).then(r => r.json()),
+  });
+
+  const { data: myReaction } = useQuery<{ reaction: string | null }>({
+    queryKey: ['/api/blog/updates', updateId, 'my-reaction', visitorId],
+    queryFn: () => fetch(`/api/blog/updates/${updateId}/my-reaction?visitorId=${visitorId}`).then(r => r.json()),
+  });
+
+  const toggleReaction = useMutation({
+    mutationFn: (reactionType: "like" | "love" | "dislike") =>
+      apiRequest('POST', `/api/blog/updates/${updateId}/reactions`, { reactionType, visitorId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/blog/updates', updateId, 'reactions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/blog/updates', updateId, 'my-reaction', visitorId] });
+    },
+    onError: () => {
+      toast({ title: "Failed to react", variant: "destructive" });
+    },
+  });
+
+  return (
+    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-primary/10">
+      <Button
+        size="sm"
+        variant={myReaction?.reaction === 'like' ? 'default' : 'ghost'}
+        className="gap-1 h-8"
+        onClick={() => toggleReaction.mutate('like')}
+        disabled={toggleReaction.isPending}
+        data-testid={`button-like-${updateId}`}
+      >
+        <ThumbsUp className="w-4 h-4" />
+        <span className="text-xs">{reactions.like}</span>
+      </Button>
+      <Button
+        size="sm"
+        variant={myReaction?.reaction === 'love' ? 'default' : 'ghost'}
+        className="gap-1 h-8"
+        onClick={() => toggleReaction.mutate('love')}
+        disabled={toggleReaction.isPending}
+        data-testid={`button-love-${updateId}`}
+      >
+        <Heart className={`w-4 h-4 ${myReaction?.reaction === 'love' ? 'fill-current' : ''}`} />
+        <span className="text-xs">{reactions.love}</span>
+      </Button>
+      <Button
+        size="sm"
+        variant={myReaction?.reaction === 'dislike' ? 'default' : 'ghost'}
+        className="gap-1 h-8"
+        onClick={() => toggleReaction.mutate('dislike')}
+        disabled={toggleReaction.isPending}
+        data-testid={`button-dislike-${updateId}`}
+      >
+        <ThumbsDown className="w-4 h-4" />
+        <span className="text-xs">{reactions.dislike}</span>
+      </Button>
+    </div>
+  );
+}
+
+function WorkUpdatesSection({ isAdmin }: { isAdmin: boolean }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState<string>("general");
@@ -190,50 +264,52 @@ function WorkUpdatesSection() {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-3 p-4 rounded-lg bg-background/50 border border-primary/10">
-          <Input
-            placeholder="Update title..."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="bg-background/50 border-primary/20 focus:border-primary"
-            data-testid="input-update-title"
-          />
-          <Textarea
-            placeholder="What are you working on?"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="bg-background/50 border-primary/20 focus:border-primary min-h-[80px]"
-            data-testid="input-update-content"
-          />
-          <div className="flex gap-2 flex-wrap">
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="w-[160px] bg-background/50 border-primary/20" data-testid="select-update-category">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="general">General</SelectItem>
-                <SelectItem value="development">Development</SelectItem>
-                <SelectItem value="3d-printing">3D Printing</SelectItem>
-                <SelectItem value="ai">AI</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button 
-              onClick={() => createUpdate.mutate({ title, content, category })}
-              disabled={!title.trim() || !content.trim() || createUpdate.isPending}
-              className="ml-auto"
-              data-testid="button-post-update"
-            >
-              Post Update
-            </Button>
+        {isAdmin && (
+          <div className="space-y-3 p-4 rounded-lg bg-background/50 border border-primary/10">
+            <Input
+              placeholder="Update title..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="bg-background/50 border-primary/20 focus:border-primary"
+              data-testid="input-update-title"
+            />
+            <Textarea
+              placeholder="What are you working on?"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="bg-background/50 border-primary/20 focus:border-primary min-h-[80px]"
+              data-testid="input-update-content"
+            />
+            <div className="flex gap-2 flex-wrap">
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="w-[160px] bg-background/50 border-primary/20" data-testid="select-update-category">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="development">Development</SelectItem>
+                  <SelectItem value="3d-printing">3D Printing</SelectItem>
+                  <SelectItem value="ai">AI</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button 
+                onClick={() => createUpdate.mutate({ title, content, category })}
+                disabled={!title.trim() || !content.trim() || createUpdate.isPending}
+                className="ml-auto"
+                data-testid="button-post-update"
+              >
+                Post Update
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
 
         {isLoading ? (
           <div className="text-center py-8 text-muted-foreground">Loading updates...</div>
         ) : updates.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">No updates yet</div>
         ) : (
-          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+          <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
             {updates.map((update) => (
               <div 
                 key={update.id} 
@@ -251,6 +327,7 @@ function WorkUpdatesSection() {
                 <div className="text-xs text-muted-foreground/60">
                   {update.createdAt && format(new Date(update.createdAt), 'MMM d, yyyy h:mm a')}
                 </div>
+                <ReactionButtons updateId={update.id} />
               </div>
             ))}
           </div>
@@ -443,6 +520,13 @@ function PrintingProjectsSection() {
 }
 
 export default function Blog() {
+  const { data: adminCheck } = useQuery<{ isAdmin: boolean }>({
+    queryKey: ['/api/auth/is-admin'],
+    queryFn: () => fetch('/api/auth/is-admin').then(r => r.json()),
+  });
+
+  const isAdmin = adminCheck?.isAdmin ?? false;
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -470,7 +554,7 @@ export default function Blog() {
               <CommentsSection />
             </div>
             <div className="lg:col-span-2 space-y-6">
-              <WorkUpdatesSection />
+              <WorkUpdatesSection isAdmin={isAdmin} />
               <PrintingProjectsSection />
             </div>
           </div>
