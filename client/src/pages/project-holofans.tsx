@@ -14,7 +14,7 @@ import {
   Heart, Star, Zap, Flame, Cloud, Moon, Sun, Music,
   Gamepad2, Gift, Coffee, Camera, Rocket, Globe,
   Crown, Diamond, Shield, Target, Award, Smile,
-  Play, Pause, X, Eye
+  Play, Pause, X, Eye, ExternalLink, Sword, Pickaxe
 } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -835,7 +835,7 @@ export default function ProjectHolofans() {
               Browse 500+ stunning holograms ready for your holographic display fan, 
               or create your own custom holographic content with personalized messages and voice
             </p>
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center justify-center gap-4 flex-wrap">
               <Badge variant="outline" className="border-cyan-500/50 text-cyan-400 bg-cyan-500/10">
                 {allHolograms.length}+ Holograms
               </Badge>
@@ -847,6 +847,82 @@ export default function ProjectHolofans() {
               </Badge>
             </div>
           </div>
+
+          <Card 
+            className="mb-8 bg-gradient-to-r from-purple-900/30 via-blue-900/30 to-cyan-900/30 border-2 border-purple-500/40 overflow-hidden"
+            style={{ boxShadow: "0 0 40px hsl(280 100% 50% / 0.2)" }}
+          >
+            <CardContent className="p-6">
+              <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div 
+                    className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center shrink-0"
+                    style={{ boxShadow: "0 0 20px hsl(280 100% 50% / 0.4)" }}
+                  >
+                    <Disc3 className="w-10 h-10 text-white animate-spin" style={{ animationDuration: "4s" }} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-heading font-bold text-white mb-1">
+                      PixelArc Community Archive
+                    </h2>
+                    <p className="text-sm text-purple-200/80 max-w-lg">
+                      Access 250+ premium hologram .BIN files ready for your Atom or Luxa display. 
+                      Star Wars, Batman, Arcane, Minecraft, Warhammer and more!
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/40">
+                      <Star className="w-3 h-3 mr-1" />
+                      Star Wars (203)
+                    </Badge>
+                    <Badge className="bg-gray-500/20 text-gray-300 border-gray-500/40">
+                      Batman (10)
+                    </Badge>
+                    <Badge className="bg-pink-500/20 text-pink-300 border-pink-500/40">
+                      Arcane (14)
+                    </Badge>
+                    <Badge className="bg-green-500/20 text-green-300 border-green-500/40">
+                      <Pickaxe className="w-3 h-3 mr-1" />
+                      Minecraft (16)
+                    </Badge>
+                    <Badge className="bg-red-500/20 text-red-300 border-red-500/40">
+                      <Sword className="w-3 h-3 mr-1" />
+                      Warhammer (16)
+                    </Badge>
+                  </div>
+                  <Button 
+                    size="lg"
+                    className="gap-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white border-0 shrink-0"
+                    onClick={() => window.open('https://pixelarc.store/pages/community-archive-bin', '_blank')}
+                    data-testid="button-pixelarc-archive"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Open PixelArc Archive
+                  </Button>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-purple-500/30 flex flex-wrap items-center justify-center gap-6 text-xs text-purple-200/70">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-cyan-400" />
+                  <span><strong>Atom:</strong> Small Display Files</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-purple-400" />
+                  <span><strong>Luxa:</strong> Large Display Files</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Download className="w-3 h-3" />
+                  <span>Drag & drop .BIN files to SD card</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Zap className="w-3 h-3" />
+                  <span>Max 50 files per display</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           <Tabs defaultValue="gallery" className="space-y-8">
             <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 h-12">
