@@ -261,20 +261,56 @@ const colorHex: Record<string, { primary: string; secondary: string; glow: strin
   "Electric Blue": { primary: "#00BFFF", secondary: "#1E90FF", glow: "rgba(0, 191, 255, 0.6)" },
 };
 
+function getAvatarStyle(category: string): string {
+  switch (category) {
+    case "starwars":
+    case "space":
+      return "bottts";
+    case "tvshows":
+    case "holiday":
+      return "avataaars";
+    case "animals":
+      return "thumbs";
+    case "gaming":
+      return "pixel-art";
+    case "music":
+    case "abstract":
+      return "shapes";
+    case "nature":
+      return "icons";
+    default:
+      return "pixel-art";
+  }
+}
+
 function HologramPreview({ 
   name, 
   color, 
   style, 
-  size = 120 
+  size = 120,
+  category = "general"
 }: { 
   name: string; 
   color: string; 
   style: string; 
   size?: number;
+  category?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [avatarImage, setAvatarImage] = useState<HTMLImageElement | null>(null);
+
+  const displayName = name.split(" ").slice(2).join(" ") || name;
+  const avatarStyle = getAvatarStyle(category);
+  const avatarUrl = `https://api.dicebear.com/9.x/${avatarStyle}/svg?seed=${encodeURIComponent(displayName)}&backgroundColor=transparent`;
+
+  useEffect(() => {
+    const img = document.createElement('img') as HTMLImageElement;
+    img.crossOrigin = "anonymous";
+    img.onload = () => setAvatarImage(img);
+    img.src = avatarUrl;
+  }, [avatarUrl]);
 
   const drawHologram = useCallback((timestamp: number) => {
     const canvas = canvasRef.current;
@@ -283,7 +319,6 @@ function HologramPreview({
     if (!ctx) return;
 
     const colors = colorHex[color] || colorHex.Cyan;
-    const displayName = name.split(" ").slice(2).join(" ");
     const centerX = size / 2;
     const centerY = size / 2;
     const radius = size * 0.42;
@@ -331,25 +366,44 @@ function HologramPreview({
       ctx.restore();
     }
 
-    ctx.save();
-    ctx.fillStyle = colors.primary;
-    ctx.shadowColor = colors.glow;
-    ctx.shadowBlur = isHovered ? 15 : 8;
-    ctx.font = `bold ${Math.min(size / 8, 14)}px Arial`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    const words = displayName.split(" ");
-    if (words.length <= 2) {
-      ctx.fillText(displayName, centerX, centerY);
+    if (avatarImage) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius * 0.65 * animFactor, 0, Math.PI * 2);
+      ctx.clip();
+      
+      const imgSize = radius * 1.3 * animFactor;
+      ctx.globalAlpha = 0.9;
+      ctx.filter = `drop-shadow(0 0 ${isHovered ? 12 : 6}px ${colors.primary}) hue-rotate(${getHueRotation(color)}deg)`;
+      ctx.drawImage(
+        avatarImage,
+        centerX - imgSize / 2,
+        centerY - imgSize / 2,
+        imgSize,
+        imgSize
+      );
+      ctx.restore();
     } else {
-      const lineHeight = size / 7;
-      const startY = centerY - lineHeight / 2;
-      ctx.fillText(words.slice(0, 2).join(" "), centerX, startY);
-      ctx.font = `${Math.min(size / 10, 11)}px Arial`;
-      ctx.fillText(words.slice(2).join(" "), centerX, startY + lineHeight);
+      ctx.save();
+      ctx.fillStyle = colors.primary;
+      ctx.shadowColor = colors.glow;
+      ctx.shadowBlur = isHovered ? 15 : 8;
+      ctx.font = `bold ${Math.min(size / 8, 14)}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      const words = displayName.split(" ");
+      if (words.length <= 2) {
+        ctx.fillText(displayName, centerX, centerY);
+      } else {
+        const lineHeight = size / 7;
+        const startY = centerY - lineHeight / 2;
+        ctx.fillText(words.slice(0, 2).join(" "), centerX, startY);
+        ctx.font = `${Math.min(size / 10, 11)}px Arial`;
+        ctx.fillText(words.slice(2).join(" "), centerX, startY + lineHeight);
+      }
+      ctx.restore();
     }
-    ctx.restore();
 
     ctx.save();
     ctx.font = `${Math.min(size / 12, 9)}px Arial`;
@@ -361,7 +415,7 @@ function HologramPreview({
     if (isHovered) {
       animationRef.current = requestAnimationFrame(drawHologram);
     }
-  }, [name, color, style, size, isHovered]);
+  }, [name, color, style, size, isHovered, avatarImage, displayName]);
 
   useEffect(() => {
     drawHologram(0);
@@ -401,6 +455,22 @@ function HologramPreview({
       onMouseLeave={() => setIsHovered(false)}
     />
   );
+}
+
+function getHueRotation(color: string): number {
+  switch (color) {
+    case "Cyan": return 180;
+    case "Magenta": return 300;
+    case "Gold": return 45;
+    case "Green": return 120;
+    case "Blue": return 240;
+    case "Red": return 0;
+    case "Purple": return 270;
+    case "Orange": return 30;
+    case "Neon Pink": return 330;
+    case "Electric Blue": return 200;
+    default: return 0;
+  }
 }
 
 export default function ProjectHolofans() {
@@ -775,6 +845,7 @@ export default function ProjectHolofans() {
                               color={holo.color} 
                               style={holo.style}
                               size={100}
+                              category={holo.category}
                             />
                           </div>
                           <p className="text-xs text-center truncate text-muted-foreground">
@@ -864,6 +935,7 @@ export default function ProjectHolofans() {
                               color={holo.color} 
                               style={holo.style}
                               size={120}
+                              category={holo.category}
                             />
                           </div>
                           <p className="text-xs font-medium truncate mb-1" title={holo.name}>
