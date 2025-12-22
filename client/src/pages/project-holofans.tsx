@@ -261,25 +261,41 @@ const colorHex: Record<string, { primary: string; secondary: string; glow: strin
   "Electric Blue": { primary: "#00BFFF", secondary: "#1E90FF", glow: "rgba(0, 191, 255, 0.6)" },
 };
 
-function getAvatarStyle(category: string): string {
+function getAvatarStyle(category: string, name: string): string {
+  const lowerName = name.toLowerCase();
+  
+  if (lowerName.includes("darth") || lowerName.includes("vader") || lowerName.includes("stormtrooper") || 
+      lowerName.includes("r2-d2") || lowerName.includes("c-3po") || lowerName.includes("droid") ||
+      lowerName.includes("robot") || lowerName.includes("mech") || lowerName.includes("cyborg")) {
+    return "bottts";
+  }
+  
+  if (lowerName.includes("yoda") || lowerName.includes("grogu") || lowerName.includes("baby") ||
+      lowerName.includes("ewok") || lowerName.includes("chewbacca") || lowerName.includes("wookiee")) {
+    return "fun-emoji";
+  }
+  
   switch (category) {
     case "starwars":
+    case "tvshows":
+      return "adventurer";
     case "space":
       return "bottts";
-    case "tvshows":
-    case "holiday":
-      return "avataaars";
     case "animals":
-      return "thumbs";
+      return "fun-emoji";
     case "gaming":
-      return "pixel-art";
+      return "adventurer";
     case "music":
     case "abstract":
       return "shapes";
     case "nature":
-      return "icons";
+      return "fun-emoji";
+    case "holiday":
+      return "fun-emoji";
+    case "emoji":
+      return "fun-emoji";
     default:
-      return "pixel-art";
+      return "adventurer";
   }
 }
 
@@ -302,7 +318,7 @@ function HologramPreview({
   const [avatarImage, setAvatarImage] = useState<HTMLImageElement | null>(null);
 
   const displayName = name.split(" ").slice(2).join(" ") || name;
-  const avatarStyle = getAvatarStyle(category);
+  const avatarStyle = getAvatarStyle(category, displayName);
   const avatarUrl = `https://api.dicebear.com/9.x/${avatarStyle}/svg?seed=${encodeURIComponent(displayName)}&backgroundColor=transparent`;
 
   useEffect(() => {
