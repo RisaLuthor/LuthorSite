@@ -19,18 +19,18 @@ import {
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
-import darthVaderImg from "@assets/generated_images/pixel_art_darth_vader_hologram.png";
-import yodaImg from "@assets/generated_images/pixel_art_yoda_hologram.png";
-import babyYodaImg from "@assets/generated_images/pixel_art_baby_yoda_hologram.png";
-import stormtrooperImg from "@assets/generated_images/pixel_art_stormtrooper_hologram.png";
-import mandalorianImg from "@assets/generated_images/pixel_art_mandalorian_hologram.png";
-import r2d2Img from "@assets/generated_images/pixel_art_r2d2_hologram.png";
-import bobaFettImg from "@assets/generated_images/pixel_art_boba_fett_hologram.png";
-import leiaImg from "@assets/generated_images/pixel_art_princess_leia_hologram.png";
-import lukeImg from "@assets/generated_images/pixel_art_luke_skywalker_hologram.png";
-import chewbaccaImg from "@assets/generated_images/pixel_art_chewbacca_hologram.png";
-import c3poImg from "@assets/generated_images/pixel_art_c3po_hologram.png";
-import hanSoloImg from "@assets/generated_images/pixel_art_han_solo_hologram.png";
+import darthVaderImg from "@assets/generated_images/realistic_darth_vader_hologram.png";
+import yodaImg from "@assets/generated_images/realistic_yoda_hologram.png";
+import babyYodaImg from "@assets/generated_images/realistic_baby_yoda_hologram.png";
+import stormtrooperImg from "@assets/generated_images/realistic_stormtrooper_hologram.png";
+import mandalorianImg from "@assets/generated_images/realistic_mandalorian_hologram.png";
+import r2d2Img from "@assets/generated_images/realistic_r2d2_hologram.png";
+import bobaFettImg from "@assets/generated_images/realistic_boba_fett_hologram.png";
+import leiaImg from "@assets/generated_images/realistic_princess_leia_hologram.png";
+import lukeImg from "@assets/generated_images/realistic_luke_skywalker_hologram.png";
+import chewbaccaImg from "@assets/generated_images/realistic_chewbacca_hologram.png";
+import c3poImg from "@assets/generated_images/realistic_c3po_hologram.png";
+import hanSoloImg from "@assets/generated_images/realistic_han_solo_hologram.png";
 
 const featuredCharacterImages: Record<string, string> = {
   "Darth Vader": darthVaderImg,
