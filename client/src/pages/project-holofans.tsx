@@ -892,15 +892,16 @@ export default function ProjectHolofans() {
                       Warhammer (16)
                     </Badge>
                   </div>
-                  <Button 
-                    size="lg"
-                    className="gap-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white border-0 shrink-0"
-                    onClick={() => window.open('https://pixelarc.store/pages/community-archive-bin', '_blank')}
-                    data-testid="button-pixelarc-archive"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Open PixelArc Archive
-                  </Button>
+                  <Link href="/projects/holofans/archive">
+                    <Button 
+                      size="lg"
+                      className="gap-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white border-0 shrink-0"
+                      data-testid="button-pixelarc-archive"
+                    >
+                      <Download className="w-4 h-4" />
+                      Browse Archive
+                    </Button>
+                  </Link>
                 </div>
               </div>
               <div className="mt-4 pt-4 border-t border-purple-500/30 flex flex-wrap items-center justify-center gap-6 text-xs text-purple-200/70">
