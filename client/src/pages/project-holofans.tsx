@@ -47,23 +47,6 @@ const featuredCharacterImages: Record<string, string> = {
   "Han Solo": hanSoloImg,
 };
 
-const categories = [
-  { id: "all", name: "All Holograms", icon: Sparkles },
-  { id: "starwars", name: "Star Wars", icon: Star },
-  { id: "tvshows", name: "TV Shows", icon: Camera },
-  { id: "animals", name: "Animals", icon: Heart },
-  { id: "nature", name: "Nature", icon: Sun },
-  { id: "space", name: "Space & Sci-Fi", icon: Rocket },
-  { id: "gaming", name: "Gaming", icon: Gamepad2 },
-  { id: "music", name: "Music & Audio", icon: Music },
-  { id: "holiday", name: "Holidays", icon: Gift },
-  { id: "abstract", name: "Abstract Art", icon: Diamond },
-  { id: "text", name: "Text & Messages", icon: MessageSquare },
-  { id: "sports", name: "Sports", icon: Target },
-  { id: "emoji", name: "Symbols", icon: Smile },
-  { id: "business", name: "Business", icon: Crown },
-];
-
 const hologramStyles = [
   "Spinning", "Pulsing", "Floating", "Morphing", "Glowing", 
   "Rotating", "Bouncing", "Fading", "Zooming", "Waving"
@@ -74,190 +57,20 @@ const colors = [
   "Purple", "Orange", "White", "Rainbow", "Neon Pink", "Electric Blue"
 ];
 
-const generateHolograms = () => {
-  const holograms: Array<{
-    id: string;
-    name: string;
-    category: string;
-    style: string;
-    color: string;
-    downloads: number;
-    featured: boolean;
-  }> = [];
-  
-  const starWarsNames = [
-    "Darth Vader", "Luke Skywalker", "Princess Leia", "Yoda", "Obi-Wan Kenobi",
-    "Han Solo", "Chewbacca", "R2-D2", "C-3PO", "Boba Fett", "Mandalorian",
-    "Baby Yoda Grogu", "Kylo Ren", "Rey", "Stormtrooper", "Death Star",
-    "Millennium Falcon", "X-Wing Fighter", "TIE Fighter", "Star Destroyer",
-    "Lightsaber Blue", "Lightsaber Red", "Lightsaber Green", "Lightsaber Purple",
-    "Imperial Logo", "Rebel Alliance", "Jedi Order", "Sith Symbol",
-    "May The Force", "I Am Your Father", "Do Or Do Not", "This Is The Way",
-    "The Force Awakens", "Dark Side", "Light Side", "Clone Trooper",
-    "AT-AT Walker", "BB-8", "Ewok", "Wookiee"
-  ];
-  
-  const tvShowNames = [
-    "Walter White", "Jesse Pinkman", "Michael Scott", "Dwight Schrute",
-    "Jon Snow", "Daenerys", "Tyrion Lannister", "Sheldon Cooper",
-    "Rick Sanchez", "Morty Smith", "Homer Simpson", "Bart Simpson",
-    "SpongeBob", "Patrick Star", "Peter Griffin", "Stewie Griffin",
-    "Pikachu", "Goku", "Naruto", "Luffy One Piece",
-    "Say My Name", "I Am The One Who Knocks", "Thats What She Said",
-    "Winter Is Coming", "You Know Nothing", "Bazinga", "Wubba Lubba",
-    "Doh", "Cowabunga", "Im Ready", "Giggity", "How You Doin",
-    "Pivot", "We Were On A Break", "Yada Yada Yada", "No Soup For You",
-    "Live Long Prosper", "Make It So", "Engage", "Its Bigger On Inside"
-  ];
-  
-  const animalNames = [
-    "Lion", "Tiger", "Eagle", "Wolf", "Dragon", "Phoenix", "Unicorn", "Dolphin",
-    "Butterfly", "Hummingbird", "Owl", "Fox", "Bear", "Shark", "Whale", "Horse",
-    "Panther", "Falcon", "Cobra", "Spider", "Scorpion", "Raven", "Hawk", "Deer",
-    "Elephant", "Gorilla", "Cheetah", "Jaguar", "Leopard", "Rhino", "Hippo", "Giraffe",
-    "Zebra", "Kangaroo", "Koala", "Panda", "Penguin", "Seal", "Otter", "Raccoon"
-  ];
-  
-  const natureNames = [
-    "Rose", "Lotus", "Cherry Blossom", "Sunflower", "Orchid", "Tulip", "Lily",
-    "Tree of Life", "Mountain Peak", "Ocean Wave", "Waterfall", "Lightning Bolt",
-    "Tornado", "Aurora", "Rainbow", "Crystal", "Flame", "Ice Crystal", "Leaf",
-    "Forest", "Desert Dune", "Coral Reef", "Volcano", "Glacier", "Canyon",
-    "River Flow", "Cloud Formation", "Sunset", "Moonrise", "Starfield"
-  ];
-  
-  const spaceNames = [
-    "Galaxy Spiral", "Black Hole", "Nebula", "Supernova", "Asteroid Belt",
-    "Saturn Rings", "Mars Colony", "Space Station", "Rocket Launch", "UFO",
-    "Alien Face", "Robot Head", "Cyborg", "Mech Warrior", "Spaceship",
-    "Laser Beam", "Portal", "Wormhole", "Planet Earth", "Moon Base",
-    "Satellite", "Comet", "Meteor Shower", "Solar Flare", "Pulsar",
-    "Quantum Cube", "Hologram Grid", "Matrix Code", "Circuit Board", "AI Core"
-  ];
-  
-  const gamingNames = [
-    "Controller", "Headset", "Trophy", "Power Up", "Health Bar", "XP Orb",
-    "Sword", "Shield", "Bow", "Magic Staff", "Potion", "Treasure Chest",
-    "Castle", "Boss Monster", "Hero Character", "Racing Car", "Motorcycle",
-    "Jet Fighter", "Tank", "Mech Suit", "Pixel Heart", "Coin Stack",
-    "Level Up", "Game Over", "Victory Crown", "Loot Box", "Easter Egg",
-    "Secret Key", "Boss Key", "Magic Portal"
-  ];
-  
-  const musicNames = [
-    "Treble Clef", "Bass Clef", "Music Note", "Piano Keys", "Guitar",
-    "Drums", "Violin", "Saxophone", "Microphone", "Headphones",
-    "Speaker", "Soundwave", "Equalizer", "Vinyl Record", "Cassette",
-    "DJ Turntable", "Amp Stack", "Concert Stage", "Disco Ball", "Dance Floor",
-    "Neon Beat", "Bass Drop", "Melody Flow", "Rhythm Pulse", "Harmony Wave"
-  ];
-  
-  const holidayNames = [
-    "Christmas Tree", "Snowflake", "Santa Hat", "Reindeer", "Gift Box",
-    "Candy Cane", "Ornament", "Star Topper", "Wreath", "Gingerbread",
-    "Pumpkin", "Ghost", "Bat", "Spider Web", "Skull",
-    "Heart Love", "Cupid Arrow", "Rose Bouquet", "Firework", "Party Hat",
-    "Birthday Cake", "Balloon", "Confetti", "Champagne", "Clock Countdown",
-    "Easter Egg", "Bunny", "Four Leaf Clover", "Shamrock", "Flag Banner"
-  ];
-  
-  const abstractNames = [
-    "Geometric Cube", "Spiral Vortex", "Fractal Pattern", "Möbius Strip",
-    "Klein Bottle", "Tesseract", "Sacred Geometry", "Mandala", "Infinity Loop",
-    "DNA Helix", "Atom Model", "Wave Function", "Particle Cloud", "Energy Field",
-    "Holographic Prism", "Light Rays", "Color Spectrum", "Gradient Flow",
-    "Neon Wireframe", "3D Grid", "Floating Orbs", "Crystal Matrix",
-    "Liquid Metal", "Plasma Ball", "Electric Arc", "Magnetic Field",
-    "Warp Tunnel", "Dimension Rift", "Time Spiral", "Quantum Entangle"
-  ];
-  
-  const textNames = [
-    "Welcome", "Hello", "Love", "Peace", "Dream", "Believe", "Hope",
-    "Create", "Inspire", "Imagine", "Achieve", "Success", "Victory",
-    "Power", "Strength", "Courage", "Happy Birthday", "Congratulations",
-    "Thank You", "Good Luck", "Best Wishes", "You Rock", "Legend",
-    "Champion", "Winner", "MVP", "GOAT", "Number One", "VIP", "Elite"
-  ];
-  
-  const sportsNames = [
-    "Basketball", "Football", "Soccer Ball", "Baseball", "Tennis Ball",
-    "Golf Ball", "Hockey Puck", "Boxing Gloves", "Medal", "Trophy Cup",
-    "Finish Line", "Stopwatch", "Whistle", "Net Goal", "Scoreboard",
-    "Champion Belt", "Racing Flag", "Podium", "Olympic Rings", "Torch",
-    "Weightlifter", "Runner", "Swimmer", "Cyclist", "Skateboarder"
-  ];
-  
-  const symbolNames = [
-    "Thumbs Up", "Peace Sign", "Rock Hand", "OK Hand", "Clapping",
-    "Fire Symbol", "Lightning", "Star Burst", "Heart Beat", "Checkmark",
-    "Crown", "Diamond", "Gem", "Coin", "Dollar Sign",
-    "Bitcoin", "Ethereum", "Rocket Up", "Chart Arrow", "Target Bull",
-    "Shield Badge", "Award Ribbon", "Certificate", "Diploma", "Key"
-  ];
-  
-  const businessNames = [
-    "Logo Spinner", "Brand Mark", "Company Shield", "Corporate Badge",
-    "QR Code", "Barcode", "ID Card", "Business Card", "Name Tag",
-    "Office Tower", "Briefcase", "Handshake", "Chart Graph", "Pie Chart",
-    "Globe Network", "Connection Nodes", "Cloud Data", "Server Rack",
-    "Holographic ID", "Access Granted", "Verified Badge", "Premium Seal",
-    "Elite Member", "VIP Pass", "Gold Status"
-  ];
-  
-  const categoryData: Record<string, string[]> = {
-    starwars: starWarsNames,
-    tvshows: tvShowNames,
-    animals: animalNames,
-    nature: natureNames,
-    space: spaceNames,
-    gaming: gamingNames,
-    music: musicNames,
-    holiday: holidayNames,
-    abstract: abstractNames,
-    text: textNames,
-    sports: sportsNames,
-    emoji: symbolNames,
-    business: businessNames,
-  };
-  
-  let id = 1;
-  Object.entries(categoryData).forEach(([category, names]) => {
-    names.forEach((name) => {
-      hologramStyles.forEach((style, styleIdx) => {
-        if (styleIdx < 2 || Math.random() > 0.6) {
-          const color = colors[Math.floor(Math.random() * colors.length)];
-          holograms.push({
-            id: `holo-${id++}`,
-            name: `${color} ${style} ${name}`,
-            category,
-            style,
-            color,
-            downloads: Math.floor(Math.random() * 5000) + 100,
-            featured: Math.random() > 0.95,
-          });
-        }
-      });
-    });
-  });
-  
-  return holograms.slice(0, 550);
-};
-
-const allHolograms = generateHolograms();
-
-const categoryIcons: Record<string, typeof Heart> = {
-  animals: Heart,
-  nature: Sun,
-  space: Rocket,
-  gaming: Gamepad2,
-  music: Music,
-  holiday: Gift,
-  abstract: Diamond,
-  text: MessageSquare,
-  sports: Target,
-  emoji: Smile,
-  business: Crown,
-};
+const featuredStarWarsHolograms = [
+  { id: "sw-1", name: "Darth Vader", image: darthVaderImg, style: "Spinning", color: "Red" },
+  { id: "sw-2", name: "Yoda", image: yodaImg, style: "Floating", color: "Green" },
+  { id: "sw-3", name: "Baby Yoda Grogu", image: babyYodaImg, style: "Pulsing", color: "Cyan" },
+  { id: "sw-4", name: "Stormtrooper", image: stormtrooperImg, style: "Spinning", color: "White" },
+  { id: "sw-5", name: "Mandalorian", image: mandalorianImg, style: "Glowing", color: "Blue" },
+  { id: "sw-6", name: "R2-D2", image: r2d2Img, style: "Rotating", color: "Blue" },
+  { id: "sw-7", name: "Boba Fett", image: bobaFettImg, style: "Pulsing", color: "Green" },
+  { id: "sw-8", name: "Princess Leia", image: leiaImg, style: "Floating", color: "White" },
+  { id: "sw-9", name: "Luke Skywalker", image: lukeImg, style: "Glowing", color: "Blue" },
+  { id: "sw-10", name: "Chewbacca", image: chewbaccaImg, style: "Spinning", color: "Gold" },
+  { id: "sw-11", name: "C-3PO", image: c3poImg, style: "Rotating", color: "Gold" },
+  { id: "sw-12", name: "Han Solo", image: hanSoloImg, style: "Floating", color: "Cyan" },
+];
 
 const colorGradients: Record<string, string> = {
   Cyan: "from-cyan-400 to-cyan-600",
@@ -519,7 +332,6 @@ function getHueRotation(color: string): number {
 }
 
 export default function ProjectHolofans() {
-  const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -535,13 +347,9 @@ export default function ProjectHolofans() {
   const audioPlayerRef = useRef<HTMLAudioElement>(null);
   const { toast } = useToast();
 
-  const filteredHolograms = allHolograms.filter((holo) => {
-    const matchesCategory = selectedCategory === "all" || holo.category === selectedCategory;
-    const matchesSearch = holo.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-
-  const featuredHolograms = allHolograms.filter((h) => h.featured).slice(0, 8);
+  const filteredHolograms = featuredStarWarsHolograms.filter((holo) => 
+    holo.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -651,7 +459,7 @@ export default function ProjectHolofans() {
     }
   };
 
-  const handleDownload = (hologram: typeof allHolograms[0]) => {
+  const handleDownload = (hologram: typeof featuredStarWarsHolograms[0]) => {
     toast({
       title: "Preparing hologram download",
       description: `${hologram.name} - ${hologram.style} animation in ${hologram.color}`,
@@ -837,7 +645,7 @@ export default function ProjectHolofans() {
             </p>
             <div className="flex items-center justify-center gap-4 flex-wrap">
               <Badge variant="outline" className="border-cyan-500/50 text-cyan-400 bg-cyan-500/10">
-                {allHolograms.length}+ Holograms
+                250+ Holograms
               </Badge>
               <Badge variant="outline" className="border-purple-500/50 text-purple-400 bg-purple-500/10">
                 Free Downloads
@@ -938,154 +746,108 @@ export default function ProjectHolofans() {
             </TabsList>
 
             <TabsContent value="gallery" className="space-y-8">
-              {featuredHolograms.length > 0 && (
-                <Card
-                  className="bg-card/50 backdrop-blur-xl border-primary/20"
-                  style={{ boxShadow: "0 0 30px hsl(187 100% 50% / 0.15)" }}
-                >
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 font-heading" style={{ color: "hsl(45 93% 60%)" }}>
-                      <Star className="w-5 h-5" />
-                      Featured Holograms
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
-                      {featuredHolograms.map((holo) => (
-                        <div
-                          key={holo.id}
-                          className="group cursor-pointer"
-                          onClick={() => handleDownload(holo)}
-                          data-testid={`featured-${holo.id}`}
-                        >
-                          <div 
-                            className="mb-2 transition-all duration-300 group-hover:scale-105"
-                            style={{ boxShadow: "0 0 20px hsl(45 93% 50% / 0.3)" }}
-                          >
-                            <HologramPreview 
-                              name={holo.name} 
-                              color={holo.color} 
-                              style={holo.style}
-                              size={100}
-                              category={holo.category}
-                            />
-                          </div>
-                          <p className="text-xs text-center truncate text-muted-foreground">
-                            {holo.name.split(" ").slice(2).join(" ")}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              <div className="flex flex-col lg:flex-row gap-6">
-                <Card
-                  className="lg:w-64 shrink-0 bg-card/50 backdrop-blur-xl border-primary/20"
-                  style={{ boxShadow: "0 0 20px hsl(187 100% 50% / 0.1)" }}
-                >
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-heading" style={{ color: "hsl(187 100% 70%)" }}>
-                      Categories
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-1">
-                    {categories.map((cat) => {
-                      const count = cat.id === "all" 
-                        ? allHolograms.length 
-                        : allHolograms.filter((h) => h.category === cat.id).length;
-                      return (
-                        <button
-                          key={cat.id}
-                          onClick={() => setSelectedCategory(cat.id)}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-all ${
-                            selectedCategory === cat.id
-                              ? "bg-primary/20 text-primary"
-                              : "hover:bg-muted text-muted-foreground hover:text-foreground"
-                          }`}
-                          data-testid={`category-${cat.id}`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <cat.icon className="w-4 h-4" />
-                            {cat.name}
-                          </span>
-                          <Badge variant="secondary" className="text-xs">
-                            {count}
-                          </Badge>
-                        </button>
-                      );
-                    })}
-                  </CardContent>
-                </Card>
-
-                <div className="flex-1 space-y-6">
-                  <div className="relative">
+              <Card
+                className="bg-card/50 backdrop-blur-xl border-primary/20"
+                style={{ boxShadow: "0 0 30px hsl(187 100% 50% / 0.15)" }}
+              >
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 font-heading" style={{ color: "hsl(45 93% 60%)" }}>
+                    <Star className="w-5 h-5" />
+                    Featured Star Wars Holograms
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Click on any character to download. For 250+ more holograms, visit the{" "}
+                    <Link href="/projects/holofans/archive" className="text-purple-400 hover:underline">
+                      PixelArc Community Archive
+                    </Link>
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="relative mb-6">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <Input
-                      placeholder="Search holograms..."
+                      placeholder="Search characters..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 max-w-md"
                       data-testid="input-search-holograms"
                     />
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">
-                      Showing {filteredHolograms.length} holograms
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {filteredHolograms.slice(0, 50).map((holo) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                    {filteredHolograms.map((holo) => (
                       <Card
                         key={holo.id}
-                        className="group bg-card/50 backdrop-blur-xl border-primary/20 cursor-pointer transition-all duration-300 hover:-translate-y-1 overflow-visible"
+                        className="group bg-card/50 backdrop-blur-xl border-yellow-500/30 cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:border-yellow-500/60 overflow-hidden"
                         onClick={() => handleDownload(holo)}
                         data-testid={`holo-${holo.id}`}
                       >
-                        <CardContent className="p-3">
-                          <div
-                            className="mb-2 transition-all duration-300 group-hover:scale-105"
+                        <CardContent className="p-4">
+                          <div 
+                            className="aspect-square rounded-full overflow-hidden mb-3 transition-all duration-300 group-hover:scale-105"
                             style={{ 
-                              boxShadow: `0 0 15px ${holo.color === "Cyan" ? "hsl(187 100% 50% / 0.3)" : "hsl(280 100% 50% / 0.2)"}` 
+                              boxShadow: `0 0 25px ${colorHex[holo.color]?.glow || "rgba(255, 215, 0, 0.4)"}`,
                             }}
                           >
-                            <HologramPreview 
-                              name={holo.name} 
-                              color={holo.color} 
-                              style={holo.style}
-                              size={120}
-                              category={holo.category}
+                            <img 
+                              src={holo.image} 
+                              alt={holo.name}
+                              className="w-full h-full object-cover"
                             />
                           </div>
-                          <p className="text-xs font-medium truncate mb-1" title={holo.name}>
-                            {holo.name.split(" ").slice(2).join(" ")}
+                          <p className="text-sm font-medium text-center truncate mb-1" title={holo.name}>
+                            {holo.name}
                           </p>
-                          <div className="flex items-center justify-between gap-1">
-                            <Badge variant="secondary" className="text-[10px] px-1.5">
+                          <div className="flex items-center justify-center gap-2">
+                            <Badge 
+                              variant="secondary" 
+                              className="text-[10px] px-1.5"
+                              style={{ backgroundColor: `${colorHex[holo.color]?.primary}20`, color: colorHex[holo.color]?.primary }}
+                            >
                               {holo.style}
                             </Badge>
-                            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                              <Download className="w-3 h-3" />
-                              {holo.downloads > 1000 ? `${(holo.downloads / 1000).toFixed(1)}k` : holo.downloads}
-                            </span>
+                          </div>
+                          <div className="flex items-center justify-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Download className="w-3 h-3 text-yellow-400" />
+                            <span className="text-xs text-yellow-400">Click to download</span>
                           </div>
                         </CardContent>
                       </Card>
                     ))}
                   </div>
-
-                  {filteredHolograms.length > 50 && (
-                    <div className="text-center">
-                      <Button variant="outline" data-testid="button-load-more">
-                        Load More ({filteredHolograms.length - 50} remaining)
-                      </Button>
+                  {filteredHolograms.length === 0 && (
+                    <div className="text-center py-12">
+                      <Star className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">No characters found matching "{searchQuery}"</p>
                     </div>
                   )}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className="bg-gradient-to-r from-purple-900/30 to-cyan-900/30 border-purple-500/40"
+                style={{ boxShadow: "0 0 30px hsl(280 100% 50% / 0.15)" }}
+              >
+                <CardContent className="p-6 text-center">
+                  <Disc3 className="w-12 h-12 mx-auto text-purple-400 animate-spin mb-4" style={{ animationDuration: "4s" }} />
+                  <h3 className="text-xl font-heading font-bold text-white mb-2">
+                    Want More Holograms?
+                  </h3>
+                  <p className="text-sm text-purple-200/80 max-w-lg mx-auto mb-4">
+                    Access the full PixelArc Community Archive with 250+ premium hologram .BIN files - 
+                    Star Wars, Batman, Arcane, Minecraft, Warhammer, and more!
+                  </p>
+                  <Link href="/projects/holofans/archive">
+                    <Button 
+                      size="lg"
+                      className="gap-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white"
+                      data-testid="button-browse-full-archive"
+                    >
+                      <Download className="w-4 h-4" />
+                      Browse Full Archive
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="create" className="space-y-8">
