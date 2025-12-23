@@ -10,7 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, ChevronLeft, ChevronRight, MessageSquare, Printer, Cpu, Send, Clock, User, HardDrive, Box, ThumbsUp, Heart, ThumbsDown } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, MessageSquare, Printer, Cpu, Send, Clock, User, HardDrive, Box, ThumbsUp, Heart, ThumbsDown, X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns";
 import type { WorkUpdate, BlogComment, PrintingProject } from "@shared/schema";
 
@@ -26,12 +32,15 @@ function getVisitorId(): string {
 interface CalendarEvent {
   id: string;
   summary: string;
+  description?: string;
+  location?: string;
   start: { dateTime?: string; date?: string };
   end: { dateTime?: string; date?: string };
 }
 
 function CalendarSection() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   
   const timeMin = startOfMonth(currentMonth).toISOString();
   const timeMax = endOfMonth(currentMonth).toISOString();
@@ -57,91 +66,162 @@ function CalendarSection() {
     });
   };
 
+  const selectedDayEvents = selectedDay ? getEventsForDay(selectedDay) : [];
+
+  const formatEventTime = (event: CalendarEvent) => {
+    const startTime = event.start?.dateTime;
+    const endTime = event.end?.dateTime;
+    
+    if (startTime && endTime) {
+      return `${format(new Date(startTime), 'h:mm a')} - ${format(new Date(endTime), 'h:mm a')}`;
+    }
+    return 'All day';
+  };
+
   return (
-    <Card className="bg-card/50 backdrop-blur-xl border-primary/20" style={{ boxShadow: "0 0 30px hsl(187 100% 50% / 0.1)" }}>
-      <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <div className="flex items-center gap-3">
-          <Calendar className="w-6 h-6 text-primary" />
-          <CardTitle className="font-display tracking-wider" style={{ color: "hsl(187 100% 50%)" }}>
-            Schedule
-          </CardTitle>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            size="icon" 
-            variant="ghost" 
-            onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-            data-testid="button-prev-month"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <span className="font-heading text-sm min-w-[120px] text-center" data-testid="text-current-month">
-            {format(currentMonth, 'MMMM yyyy')}
-          </span>
-          <Button 
-            size="icon" 
-            variant="ghost" 
-            onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-            data-testid="button-next-month"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-pulse text-muted-foreground">Loading calendar...</div>
+    <>
+      <Card className="bg-card/50 backdrop-blur-xl border-primary/20" style={{ boxShadow: "0 0 30px hsl(187 100% 50% / 0.1)" }}>
+        <CardHeader className="flex flex-row items-center justify-between gap-2">
+          <div className="flex items-center gap-3">
+            <Calendar className="w-6 h-6 text-primary" />
+            <CardTitle className="font-display tracking-wider" style={{ color: "hsl(187 100% 50%)" }}>
+              Schedule
+            </CardTitle>
           </div>
-        ) : (
-          <div className="grid grid-cols-7 gap-1">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="text-center text-xs text-muted-foreground py-2 font-heading">
-                {day}
-              </div>
-            ))}
-            {paddingDays.map((_, i) => (
-              <div key={`pad-${i}`} className="aspect-square" />
-            ))}
-            {days.map(day => {
-              const dayEvents = getEventsForDay(day);
-              const isToday = isSameDay(day, new Date());
-              return (
-                <div
-                  key={day.toISOString()}
-                  className={`aspect-square p-1 rounded-md border transition-colors ${
-                    isToday 
-                      ? 'border-primary bg-primary/10' 
-                      : 'border-transparent hover:border-primary/30'
-                  }`}
-                  data-testid={`calendar-day-${format(day, 'yyyy-MM-dd')}`}
-                >
-                  <div className={`text-xs text-center ${isToday ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
-                    {format(day, 'd')}
-                  </div>
-                  {dayEvents.length > 0 && (
-                    <div className="mt-0.5 flex flex-col gap-0.5 overflow-hidden">
-                      {dayEvents.slice(0, 2).map(event => (
-                        <div 
-                          key={event.id} 
-                          className="text-[8px] bg-primary/20 text-primary rounded px-0.5 truncate"
-                          title={event.summary}
-                        >
-                          {event.summary}
-                        </div>
-                      ))}
-                      {dayEvents.length > 2 && (
-                        <div className="text-[8px] text-primary/70">+{dayEvents.length - 2} more</div>
-                      )}
-                    </div>
-                  )}
+          <div className="flex items-center gap-2">
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+              data-testid="button-prev-month"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <span className="font-heading text-sm min-w-[120px] text-center" data-testid="text-current-month">
+              {format(currentMonth, 'MMMM yyyy')}
+            </span>
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+              data-testid="button-next-month"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-xs text-muted-foreground mb-4">
+            Click on any day to see what was worked on
+          </p>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-pulse text-muted-foreground">Loading calendar...</div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-7 gap-1">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                <div key={day} className="text-center text-xs text-muted-foreground py-2 font-heading">
+                  {day}
                 </div>
-              );
-            })}
+              ))}
+              {paddingDays.map((_, i) => (
+                <div key={`pad-${i}`} className="aspect-square" />
+              ))}
+              {days.map(day => {
+                const dayEvents = getEventsForDay(day);
+                const isToday = isSameDay(day, new Date());
+                const hasEvents = dayEvents.length > 0;
+                return (
+                  <button
+                    key={day.toISOString()}
+                    onClick={() => setSelectedDay(day)}
+                    className={`aspect-square p-1 rounded-md border transition-all cursor-pointer ${
+                      isToday 
+                        ? 'border-primary bg-primary/10' 
+                        : hasEvents
+                          ? 'border-primary/40 bg-primary/5 hover:bg-primary/15'
+                          : 'border-transparent hover:border-primary/30 hover:bg-primary/5'
+                    }`}
+                    data-testid={`calendar-day-${format(day, 'yyyy-MM-dd')}`}
+                  >
+                    <div className={`text-xs text-center ${isToday ? 'text-primary font-bold' : hasEvents ? 'text-primary' : 'text-muted-foreground'}`}>
+                      {format(day, 'd')}
+                    </div>
+                    {hasEvents && (
+                      <div className="mt-0.5 flex flex-col gap-0.5 overflow-hidden">
+                        {dayEvents.slice(0, 2).map(event => (
+                          <div 
+                            key={event.id} 
+                            className="text-[8px] bg-primary/20 text-primary rounded px-0.5 truncate"
+                            title={event.summary}
+                          >
+                            {event.summary}
+                          </div>
+                        ))}
+                        {dayEvents.length > 2 && (
+                          <div className="text-[8px] text-primary/70">+{dayEvents.length - 2} more</div>
+                        )}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={!!selectedDay} onOpenChange={(open) => !open && setSelectedDay(null)}>
+        <DialogContent className="sm:max-w-lg bg-card/95 backdrop-blur-xl border-primary/30" style={{ boxShadow: "0 0 50px hsl(187 100% 50% / 0.2)" }}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3 font-display tracking-wider" style={{ color: "hsl(187 100% 50%)" }}>
+              <Calendar className="w-5 h-5" />
+              {selectedDay && format(selectedDay, 'EEEE, MMMM d, yyyy')}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="mt-4 space-y-4 max-h-[60vh] overflow-y-auto">
+            {selectedDayEvents.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>No work scheduled for this day</p>
+              </div>
+            ) : (
+              selectedDayEvents.map(event => (
+                <Card key={event.id} className="bg-background/50 border-primary/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-1 h-full min-h-[40px] bg-primary rounded-full" />
+                      <div className="flex-1">
+                        <h4 className="font-heading text-base" style={{ color: "hsl(187 100% 50%)" }}>
+                          {event.summary}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>{formatEventTime(event)}</span>
+                        </div>
+                        {event.location && (
+                          <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                            <Box className="w-3.5 h-3.5" />
+                            <span>{event.location}</span>
+                          </div>
+                        )}
+                        {event.description && (
+                          <p className="mt-3 text-sm text-foreground/80 whitespace-pre-wrap">
+                            {event.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
