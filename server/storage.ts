@@ -54,12 +54,14 @@ export interface IStorage {
   // Work Updates
   getWorkUpdates(): Promise<WorkUpdate[]>;
   createWorkUpdate(update: InsertWorkUpdate): Promise<WorkUpdate>;
+  deleteWorkUpdate(id: string): Promise<void>;
   // Blog Comments
   getBlogComments(workUpdateId?: string): Promise<BlogComment[]>;
   createBlogComment(comment: InsertBlogComment): Promise<BlogComment>;
   // Printing Projects
   getPrintingProjects(): Promise<PrintingProject[]>;
   createPrintingProject(project: InsertPrintingProject): Promise<PrintingProject>;
+  deletePrintingProject(id: string): Promise<void>;
   // Work Update Reactions
   getReactionsForUpdate(workUpdateId: string): Promise<{ like: number; love: number; dislike: number }>;
   getUserReaction(workUpdateId: string, visitorId: string): Promise<WorkUpdateReaction | undefined>;
@@ -289,6 +291,12 @@ export class DatabaseStorage implements IStorage {
     return newUpdate;
   }
 
+  async deleteWorkUpdate(id: string): Promise<void> {
+    await db.delete(workUpdateReactions).where(eq(workUpdateReactions.workUpdateId, id));
+    await db.delete(blogComments).where(eq(blogComments.workUpdateId, id));
+    await db.delete(workUpdates).where(eq(workUpdates.id, id));
+  }
+
   // Blog Comments
   async getBlogComments(workUpdateId?: string): Promise<BlogComment[]> {
     if (workUpdateId) {
@@ -322,6 +330,10 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return newProject;
+  }
+
+  async deletePrintingProject(id: string): Promise<void> {
+    await db.delete(printingProjects).where(eq(printingProjects.id, id));
   }
 
   // Work Update Reactions

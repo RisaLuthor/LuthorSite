@@ -405,6 +405,16 @@ export async function registerRoutes(
     }
   });
 
+  app.delete("/api/blog/updates/:id", isAdmin, async (req: any, res) => {
+    try {
+      await storage.deleteWorkUpdate(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete work update error:", error);
+      res.status(500).json({ error: "Failed to delete work update" });
+    }
+  });
+
   // Check if current user is admin
   app.get("/api/auth/is-admin", async (req: any, res) => {
     const user = req.user as any;
@@ -512,6 +522,16 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Printing project error:", error);
       res.status(500).json({ error: "Failed to create printing project" });
+    }
+  });
+
+  app.delete("/api/blog/printing-projects/:id", isAdmin, async (req: any, res) => {
+    try {
+      await storage.deletePrintingProject(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete printing project error:", error);
+      res.status(500).json({ error: "Failed to delete printing project" });
     }
   });
 

@@ -394,6 +394,98 @@ function ReactionButtons({ updateId }: { updateId: string }) {
   );
 }
 
+function CurrentWorkFromCalendar() {
+  const today = new Date();
+  const timeMin = startOfMonth(today).toISOString();
+  const timeMax = endOfMonth(today).toISOString();
+  
+  const { data: events = [], isLoading } = useQuery<CalendarEvent[]>({
+    queryKey: ['/api/calendar/events', 'current-work', timeMin, timeMax],
+    queryFn: () => fetch(`/api/calendar/events?timeMin=${timeMin}&timeMax=${timeMax}`).then(r => r.json()),
+    refetchInterval: 60000,
+  });
+
+  const todayEvents = events.filter(event => {
+    const eventDate = event.start?.dateTime || event.start?.date;
+    if (!eventDate) return false;
+    return isSameDay(new Date(eventDate), today);
+  });
+
+  const formatEventTime = (event: CalendarEvent) => {
+    const startTime = event.start?.dateTime;
+    const endTime = event.end?.dateTime;
+    if (startTime && endTime) {
+      return `${format(new Date(startTime), 'h:mm a')} - ${format(new Date(endTime), 'h:mm a')}`;
+    }
+    return 'All day';
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="bg-card/50 backdrop-blur-xl border-primary/20" style={{ boxShadow: "0 0 30px hsl(187 100% 50% / 0.1)" }}>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <Cpu className="w-6 h-6 text-primary" />
+            <CardTitle className="font-display tracking-wider" style={{ color: "hsl(187 100% 50%)" }}>
+              Today's Work
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4 text-muted-foreground">Loading schedule...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (todayEvents.length === 0) {
+    return null;
+  }
+
+  return (
+    <Card className="bg-card/50 backdrop-blur-xl border-primary/20" style={{ boxShadow: "0 0 30px hsl(187 100% 50% / 0.1)" }}>
+      <CardHeader className="flex flex-row items-center justify-between gap-2">
+        <div className="flex items-center gap-3">
+          <Cpu className="w-6 h-6 text-primary" />
+          <CardTitle className="font-display tracking-wider" style={{ color: "hsl(187 100% 50%)" }}>
+            Today's Work
+          </CardTitle>
+        </div>
+        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+          Live from Calendar
+        </Badge>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {todayEvents.map(event => (
+          <div 
+            key={event.id} 
+            className="p-3 rounded-lg bg-background/50 border border-primary/20"
+            data-testid={`card-current-work-${event.id}`}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-1 h-full min-h-[40px] bg-primary rounded-full shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h4 className="font-heading font-semibold" style={{ color: "hsl(187 100% 50%)" }}>
+                  {event.summary}
+                </h4>
+                <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                  <Clock className="w-3.5 h-3.5 shrink-0" />
+                  <span>{formatEventTime(event)}</span>
+                </div>
+                {event.description && (
+                  <p className="mt-2 text-sm text-foreground/70 line-clamp-3">
+                    {event.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 function WorkUpdatesSection({ isAdmin }: { isAdmin: boolean }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -738,6 +830,7 @@ export default function Blog() {
               <CommentsSection />
             </div>
             <div className="lg:col-span-2 space-y-6">
+              <CurrentWorkFromCalendar />
               <WorkUpdatesSection isAdmin={isAdmin} />
               <PrintingProjectsSection />
             </div>
