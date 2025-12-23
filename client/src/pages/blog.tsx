@@ -46,19 +46,19 @@ interface Holiday {
 }
 
 const HOLIDAYS: Holiday[] = [
-  { name: "New Year's Day", month: 1, day: 1, gif: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif" },
-  { name: "Valentine's Day", month: 2, day: 14, gif: "https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif" },
-  { name: "St. Patrick's Day", month: 3, day: 17, gif: "https://media.giphy.com/media/l4pTfx2qLszoacZRS/giphy.gif" },
-  { name: "Easter", month: 4, day: 20, gif: "https://media.giphy.com/media/xUNd9Xre1rYT6lfMOY/giphy.gif" },
-  { name: "Mother's Day", month: 5, day: 11, gif: "https://media.giphy.com/media/l4pTdcifPZLpDjL1e/giphy.gif" },
-  { name: "Father's Day", month: 6, day: 15, gif: "https://media.giphy.com/media/l4pT0YnCgNvT7TgFq/giphy.gif" },
-  { name: "Independence Day", month: 7, day: 4, gif: "https://media.giphy.com/media/l41lNT5u8hCI92nQc/giphy.gif" },
-  { name: "Labor Day", month: 9, day: 1, gif: "https://media.giphy.com/media/3oEduSbSGpGaRX2Vri/giphy.gif" },
-  { name: "Halloween", month: 10, day: 31, gif: "https://media.giphy.com/media/12Nv3nBSCAbLO0/giphy.gif" },
-  { name: "Thanksgiving", month: 11, day: 27, gif: "https://media.giphy.com/media/xT5LMEMzdKTE2a6xfG/giphy.gif" },
-  { name: "Christmas Eve", month: 12, day: 24, gif: "https://media.giphy.com/media/d2Z4rTi11c9LRita/giphy.gif" },
-  { name: "Christmas Day", month: 12, day: 25, gif: "https://media.giphy.com/media/3oriNYQX2lC6dfW2Ji/giphy.gif" },
-  { name: "New Year's Eve", month: 12, day: 31, gif: "https://media.giphy.com/media/l0HlyqvHjptE9lk76/giphy.gif" },
+  { name: "New Year's Day", month: 1, day: 1, gif: "https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=200&h=200&fit=crop" },
+  { name: "Valentine's Day", month: 2, day: 14, gif: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=200&h=200&fit=crop" },
+  { name: "St. Patrick's Day", month: 3, day: 17, gif: "https://images.unsplash.com/photo-1521543832500-49e69f7087cc?w=200&h=200&fit=crop" },
+  { name: "Easter", month: 4, day: 20, gif: "https://images.unsplash.com/photo-1457301547464-55b8223ec157?w=200&h=200&fit=crop" },
+  { name: "Mother's Day", month: 5, day: 11, gif: "https://images.unsplash.com/photo-1462275646964-a0e3f8b0a571?w=200&h=200&fit=crop" },
+  { name: "Father's Day", month: 6, day: 15, gif: "https://images.unsplash.com/photo-1586808651018-3c70a05b8e8c?w=200&h=200&fit=crop" },
+  { name: "Independence Day", month: 7, day: 4, gif: "https://images.unsplash.com/photo-1498931299472-f7a63a5a1cfa?w=200&h=200&fit=crop" },
+  { name: "Labor Day", month: 9, day: 1, gif: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=200&h=200&fit=crop" },
+  { name: "Halloween", month: 10, day: 31, gif: "https://images.unsplash.com/photo-1509557965875-b88c97052f0e?w=200&h=200&fit=crop" },
+  { name: "Thanksgiving", month: 11, day: 27, gif: "https://images.unsplash.com/photo-1574672280600-4accfa5b6f98?w=200&h=200&fit=crop" },
+  { name: "Christmas Eve", month: 12, day: 24, gif: "https://images.unsplash.com/photo-1512389142860-9c449e58a814?w=200&h=200&fit=crop" },
+  { name: "Christmas Day", month: 12, day: 25, gif: "https://images.unsplash.com/photo-1482517967863-00e15c9b44be?w=200&h=200&fit=crop" },
+  { name: "New Year's Eve", month: 12, day: 31, gif: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200&h=200&fit=crop" },
 ];
 
 function CalendarSection() {
@@ -145,15 +145,15 @@ function CalendarSection() {
         <CardContent>
           {monthHolidays.length > 0 && (
             <div className="mb-6">
-              <h4 className="text-sm font-heading text-muted-foreground mb-3">Holidays This Month</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <h4 className="text-xs font-heading text-muted-foreground mb-2 uppercase tracking-wider">Upcoming Holidays</h4>
+              <div className="flex flex-wrap gap-2">
                 {monthHolidays.map(holiday => (
                   <div 
                     key={holiday.name}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30"
                     data-testid={`holiday-${holiday.name.toLowerCase().replace(/\s+/g, '-')}`}
                   >
-                    <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 border border-primary/30">
+                    <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0 border border-amber-500/40">
                       <img 
                         src={holiday.gif} 
                         alt={holiday.name}
@@ -162,9 +162,9 @@ function CalendarSection() {
                       />
                     </div>
                     <div>
-                      <p className="font-heading text-sm" style={{ color: "hsl(187 100% 50%)" }}>{holiday.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(currentMonth.getFullYear(), holiday.month - 1, holiday.day), 'MMMM d')}
+                      <p className="font-heading text-xs text-amber-500">{holiday.name}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {format(new Date(currentMonth.getFullYear(), holiday.month - 1, holiday.day), 'MMM d')}
                       </p>
                     </div>
                   </div>
@@ -198,9 +198,9 @@ function CalendarSection() {
                   <button
                     key={day.toISOString()}
                     onClick={() => setSelectedDay(day)}
-                    className={`aspect-square p-1 rounded-md border transition-all cursor-pointer ${
+                    className={`aspect-square p-0.5 rounded-md border transition-all cursor-pointer relative overflow-hidden ${
                       holiday
-                        ? 'border-amber-500/60 bg-amber-500/10 hover:bg-amber-500/20'
+                        ? 'border-amber-500/60 hover:border-amber-500'
                         : isToday 
                           ? 'border-primary bg-primary/10' 
                           : hasEvents
@@ -210,30 +210,43 @@ function CalendarSection() {
                     data-testid={`calendar-day-${format(day, 'yyyy-MM-dd')}`}
                     title={holiday ? holiday.name : undefined}
                   >
-                    <div className={`text-xs text-center ${holiday ? 'text-amber-500 font-bold' : isToday ? 'text-primary font-bold' : hasEvents ? 'text-primary' : 'text-muted-foreground'}`}>
-                      {format(day, 'd')}
-                    </div>
                     {holiday && (
-                      <div className="text-[7px] text-amber-500 truncate text-center" title={holiday.name}>
-                        {holiday.name.split(' ')[0]}
+                      <div className="absolute inset-0 z-0">
+                        <img 
+                          src={holiday.gif}
+                          alt={holiday.name}
+                          className="w-full h-full object-cover opacity-60"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                       </div>
                     )}
-                    {hasEvents && !holiday && (
-                      <div className="mt-0.5 flex flex-col gap-0.5 overflow-hidden">
-                        {dayEvents.slice(0, 2).map(event => (
-                          <div 
-                            key={event.id} 
-                            className="text-[8px] bg-primary/20 text-primary rounded px-0.5 truncate"
-                            title={event.summary}
-                          >
-                            {event.summary}
-                          </div>
-                        ))}
-                        {dayEvents.length > 2 && (
-                          <div className="text-[8px] text-primary/70">+{dayEvents.length - 2} more</div>
-                        )}
+                    <div className={`relative z-10 h-full flex flex-col justify-between p-0.5`}>
+                      <div className={`text-xs text-center font-semibold ${holiday ? 'text-white drop-shadow-md' : isToday ? 'text-primary font-bold' : hasEvents ? 'text-primary' : 'text-muted-foreground'}`}>
+                        {format(day, 'd')}
                       </div>
-                    )}
+                      {holiday && (
+                        <div className="text-[6px] text-white/90 truncate text-center drop-shadow-md font-medium leading-tight">
+                          {holiday.name}
+                        </div>
+                      )}
+                      {hasEvents && !holiday && (
+                        <div className="flex flex-col gap-0.5 overflow-hidden">
+                          {dayEvents.slice(0, 1).map(event => (
+                            <div 
+                              key={event.id} 
+                              className="text-[7px] bg-primary/20 text-primary rounded px-0.5 truncate"
+                              title={event.summary}
+                            >
+                              {event.summary}
+                            </div>
+                          ))}
+                          {dayEvents.length > 1 && (
+                            <div className="text-[7px] text-primary/70">+{dayEvents.length - 1}</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </button>
                 );
               })}
