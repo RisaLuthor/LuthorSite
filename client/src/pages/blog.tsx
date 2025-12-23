@@ -38,6 +38,29 @@ interface CalendarEvent {
   end: { dateTime?: string; date?: string };
 }
 
+interface Holiday {
+  name: string;
+  month: number;
+  day: number;
+  gif: string;
+}
+
+const HOLIDAYS: Holiday[] = [
+  { name: "New Year's Day", month: 1, day: 1, gif: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif" },
+  { name: "Valentine's Day", month: 2, day: 14, gif: "https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif" },
+  { name: "St. Patrick's Day", month: 3, day: 17, gif: "https://media.giphy.com/media/l4pTfx2qLszoacZRS/giphy.gif" },
+  { name: "Easter", month: 4, day: 20, gif: "https://media.giphy.com/media/xUNd9Xre1rYT6lfMOY/giphy.gif" },
+  { name: "Mother's Day", month: 5, day: 11, gif: "https://media.giphy.com/media/l4pTdcifPZLpDjL1e/giphy.gif" },
+  { name: "Father's Day", month: 6, day: 15, gif: "https://media.giphy.com/media/l4pT0YnCgNvT7TgFq/giphy.gif" },
+  { name: "Independence Day", month: 7, day: 4, gif: "https://media.giphy.com/media/l41lNT5u8hCI92nQc/giphy.gif" },
+  { name: "Labor Day", month: 9, day: 1, gif: "https://media.giphy.com/media/3oEduSbSGpGaRX2Vri/giphy.gif" },
+  { name: "Halloween", month: 10, day: 31, gif: "https://media.giphy.com/media/12Nv3nBSCAbLO0/giphy.gif" },
+  { name: "Thanksgiving", month: 11, day: 27, gif: "https://media.giphy.com/media/xT5LMEMzdKTE2a6xfG/giphy.gif" },
+  { name: "Christmas Eve", month: 12, day: 24, gif: "https://media.giphy.com/media/d2Z4rTi11c9LRita/giphy.gif" },
+  { name: "Christmas Day", month: 12, day: 25, gif: "https://media.giphy.com/media/3oriNYQX2lC6dfW2Ji/giphy.gif" },
+  { name: "New Year's Eve", month: 12, day: 31, gif: "https://media.giphy.com/media/l0HlyqvHjptE9lk76/giphy.gif" },
+];
+
 function CalendarSection() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
@@ -78,6 +101,15 @@ function CalendarSection() {
     return 'All day';
   };
 
+  const currentMonthNumber = currentMonth.getMonth() + 1;
+  const monthHolidays = HOLIDAYS.filter(h => h.month === currentMonthNumber);
+
+  const getHolidayForDay = (date: Date) => {
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    return HOLIDAYS.find(h => h.month === month && h.day === day);
+  };
+
   return (
     <>
       <Card className="bg-card/50 backdrop-blur-xl border-primary/20" style={{ boxShadow: "0 0 30px hsl(187 100% 50% / 0.1)" }}>
@@ -111,6 +143,35 @@ function CalendarSection() {
           </div>
         </CardHeader>
         <CardContent>
+          {monthHolidays.length > 0 && (
+            <div className="mb-6">
+              <h4 className="text-sm font-heading text-muted-foreground mb-3">Holidays This Month</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {monthHolidays.map(holiday => (
+                  <div 
+                    key={holiday.name}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20"
+                    data-testid={`holiday-${holiday.name.toLowerCase().replace(/\s+/g, '-')}`}
+                  >
+                    <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 border border-primary/30">
+                      <img 
+                        src={holiday.gif} 
+                        alt={holiday.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div>
+                      <p className="font-heading text-sm" style={{ color: "hsl(187 100% 50%)" }}>{holiday.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(currentMonth.getFullYear(), holiday.month - 1, holiday.day), 'MMMM d')}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <p className="text-xs text-muted-foreground mb-4">
             Click on any day to see what was worked on
           </p>
@@ -132,23 +193,32 @@ function CalendarSection() {
                 const dayEvents = getEventsForDay(day);
                 const isToday = isSameDay(day, new Date());
                 const hasEvents = dayEvents.length > 0;
+                const holiday = getHolidayForDay(day);
                 return (
                   <button
                     key={day.toISOString()}
                     onClick={() => setSelectedDay(day)}
                     className={`aspect-square p-1 rounded-md border transition-all cursor-pointer ${
-                      isToday 
-                        ? 'border-primary bg-primary/10' 
-                        : hasEvents
-                          ? 'border-primary/40 bg-primary/5 hover:bg-primary/15'
-                          : 'border-transparent hover:border-primary/30 hover:bg-primary/5'
+                      holiday
+                        ? 'border-amber-500/60 bg-amber-500/10 hover:bg-amber-500/20'
+                        : isToday 
+                          ? 'border-primary bg-primary/10' 
+                          : hasEvents
+                            ? 'border-primary/40 bg-primary/5 hover:bg-primary/15'
+                            : 'border-transparent hover:border-primary/30 hover:bg-primary/5'
                     }`}
                     data-testid={`calendar-day-${format(day, 'yyyy-MM-dd')}`}
+                    title={holiday ? holiday.name : undefined}
                   >
-                    <div className={`text-xs text-center ${isToday ? 'text-primary font-bold' : hasEvents ? 'text-primary' : 'text-muted-foreground'}`}>
+                    <div className={`text-xs text-center ${holiday ? 'text-amber-500 font-bold' : isToday ? 'text-primary font-bold' : hasEvents ? 'text-primary' : 'text-muted-foreground'}`}>
                       {format(day, 'd')}
                     </div>
-                    {hasEvents && (
+                    {holiday && (
+                      <div className="text-[7px] text-amber-500 truncate text-center" title={holiday.name}>
+                        {holiday.name.split(' ')[0]}
+                      </div>
+                    )}
+                    {hasEvents && !holiday && (
                       <div className="mt-0.5 flex flex-col gap-0.5 overflow-hidden">
                         {dayEvents.slice(0, 2).map(event => (
                           <div 
@@ -182,7 +252,28 @@ function CalendarSection() {
           </DialogHeader>
           
           <div className="mt-4 space-y-4 max-h-[60vh] overflow-y-auto">
-            {selectedDayEvents.length === 0 ? (
+            {selectedDay && getHolidayForDay(selectedDay) && (
+              <Card className="bg-amber-500/10 border-amber-500/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 rounded-lg overflow-hidden border border-amber-500/40 flex-shrink-0">
+                      <img 
+                        src={getHolidayForDay(selectedDay)!.gif}
+                        alt={getHolidayForDay(selectedDay)!.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <Badge className="bg-amber-500/20 text-amber-500 border-amber-500/40 mb-2">Holiday</Badge>
+                      <h4 className="font-heading text-lg text-amber-500">
+                        {getHolidayForDay(selectedDay)!.name}
+                      </h4>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            {selectedDayEvents.length === 0 && !(selectedDay && getHolidayForDay(selectedDay)) ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>No work scheduled for this day</p>
