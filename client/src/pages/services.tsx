@@ -138,7 +138,7 @@ export default function Services() {
                 style={{ color: "hsl(187 100% 50%)", textShadow: "0 0 20px hsl(187 100% 50% / 0.5)" }}
                 data-testid="text-services-title"
               >
-                Services
+                Skill Sets
               </h1>
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 Transforming ideas into powerful, scalable solutions. From AI-driven applications to enterprise system modernization, 
