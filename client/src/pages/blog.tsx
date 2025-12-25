@@ -68,10 +68,12 @@ function CalendarSection() {
   const timeMin = startOfMonth(currentMonth).toISOString();
   const timeMax = endOfMonth(currentMonth).toISOString();
   
-  const { data: events = [], isLoading } = useQuery<CalendarEvent[]>({
+  const { data: eventsData, isLoading } = useQuery<CalendarEvent[]>({
     queryKey: ['/api/calendar/events', timeMin, timeMax],
     queryFn: () => fetch(`/api/calendar/events?timeMin=${timeMin}&timeMax=${timeMax}`).then(r => r.json()),
   });
+  
+  const events = Array.isArray(eventsData) ? eventsData : [];
 
   const days = eachDayOfInterval({
     start: startOfMonth(currentMonth),
@@ -399,11 +401,13 @@ function CurrentWorkFromCalendar() {
   const timeMin = startOfMonth(today).toISOString();
   const timeMax = endOfMonth(today).toISOString();
   
-  const { data: events = [], isLoading } = useQuery<CalendarEvent[]>({
+  const { data: eventsData, isLoading } = useQuery<CalendarEvent[]>({
     queryKey: ['/api/calendar/events', 'current-work', timeMin, timeMax],
     queryFn: () => fetch(`/api/calendar/events?timeMin=${timeMin}&timeMax=${timeMax}`).then(r => r.json()),
     refetchInterval: 60000,
   });
+
+  const events = Array.isArray(eventsData) ? eventsData : [];
 
   const todayEvents = events.filter(event => {
     const eventDate = event.start?.dateTime || event.start?.date;
