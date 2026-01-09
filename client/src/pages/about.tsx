@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { 
   Mail, 
   Phone, 
@@ -20,6 +21,7 @@ import {
   Server,
   Shield
 } from "lucide-react";
+import profilePhoto from "@assets/69957036453__68F18644-8036-4C74-8851-29B301AA0991_1767973098291.jpeg";
 
 const skills = [
   { name: "Python", level: 95 },
@@ -90,11 +92,20 @@ export default function About() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
               <div className="lg:col-span-2">
-                <div className="mb-8">
-                  <h1 className="font-heading text-2xl lg:text-3xl mb-2">
-                    I'm <span className="text-primary" style={{ textShadow: "0 0 10px hsl(187 100% 50% / 0.5)" }}>Risa Luthor</span> and{" "}
-                    <span className="text-primary" style={{ textShadow: "0 0 10px hsl(187 100% 50% / 0.5)" }}>Full-Stack & AI Engineer</span>
-                  </h1>
+                <div className="mb-8 flex flex-col sm:flex-row items-start gap-6">
+                  <Avatar 
+                    className="w-32 h-32 border-2 border-primary/50 shrink-0"
+                    style={{ boxShadow: "0 0 20px hsl(187 100% 50% / 0.3)" }}
+                  >
+                    <AvatarImage src={profilePhoto} alt="Risa Luthor" className="object-cover" />
+                    <AvatarFallback className="text-2xl font-heading">RL</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h1 className="font-heading text-2xl lg:text-3xl mb-2">
+                      I'm <span className="text-primary" style={{ textShadow: "0 0 10px hsl(187 100% 50% / 0.5)" }}>Risa Luthor</span> and{" "}
+                      <span className="text-primary" style={{ textShadow: "0 0 10px hsl(187 100% 50% / 0.5)" }}>Full-Stack & AI Engineer</span>
+                    </h1>
+                  </div>
                 </div>
 
                 <p className="text-muted-foreground mb-8 leading-relaxed">
