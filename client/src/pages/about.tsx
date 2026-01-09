@@ -29,7 +29,7 @@ const skills = [
   { name: "JavaScript", level: 88 },
   { name: "AI & Machine Learning", level: 90 },
   { name: "Cloud Architecture", level: 85 },
-  { name: "PeopleSoft HCM", level: 92 },
+  { name: "PeopleSoft HCM", level: 60 },
 ];
 
 const coreSkills = [
