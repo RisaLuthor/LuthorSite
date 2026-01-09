@@ -204,7 +204,7 @@ export default function ProjectErpDashboard() {
                     </div>
                     <div>
                       <p className="font-heading text-lg font-semibold text-blue-300">
-                        Outlook Teams Connect
+                        Standup Dashboard
                       </p>
                       <p className="text-sm text-muted-foreground">
                         Access email, calendar, and Microsoft Teams integration
