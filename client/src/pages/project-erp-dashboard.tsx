@@ -207,7 +207,7 @@ export default function ProjectErpDashboard() {
                         Standup Dashboard
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Access email, calendar, and Microsoft Teams integration
+                        Standup Dashboard
                       </p>
                     </div>
                   </div>
