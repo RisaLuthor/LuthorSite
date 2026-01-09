@@ -3,7 +3,7 @@ import { Footer } from "@/components/footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github, Lock, Cpu, Shield, Zap, Wrench, Disc3 } from "lucide-react";
+import { ExternalLink, Github, Lock, Cpu, Shield, Zap, Wrench, Disc3, LayoutDashboard } from "lucide-react";
 import { Link } from "wouter";
 
 const projects = [
@@ -56,6 +56,14 @@ const projects = [
     tags: ["Holographic Tech", "3D Display", "Custom Media"],
     icon: Disc3,
     internalPath: "/projects/holofans",
+  },
+  {
+    id: "erp-team-dashboard",
+    title: "ERP Team Dashboard",
+    description: "Centralized enterprise resource planning dashboard for team coordination, project tracking, and workflow management. Streamlines operations with real-time data visualization and collaborative tools.",
+    status: "Active",
+    tags: ["Enterprise", "Dashboard", "Team Management"],
+    icon: LayoutDashboard,
   },
 ];
 
