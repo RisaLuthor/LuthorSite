@@ -12,7 +12,9 @@ import {
   Calendar,
   FileText,
   Settings,
-  ArrowLeft
+  ArrowLeft,
+  Mail,
+  ExternalLink
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -176,6 +178,44 @@ export default function ProjectErpDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          <a 
+            href="https://outlook-teams-connect--RisaLuthor.replit.app" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block mt-6"
+          >
+            <Card 
+              className="bg-gradient-to-r from-blue-600/20 to-cyan-600/20 backdrop-blur-xl border-blue-500/30 hover:-translate-y-1 transition-transform cursor-pointer"
+              style={{ boxShadow: "0 0 30px hsl(210 100% 50% / 0.2)" }}
+              data-testid="card-outlook-connect"
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div
+                      className="w-14 h-14 rounded-md flex items-center justify-center"
+                      style={{
+                        background: "hsl(210 100% 50% / 0.2)",
+                        border: "1px solid hsl(210 100% 50% / 0.4)",
+                      }}
+                    >
+                      <Mail className="w-7 h-7 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="font-heading text-lg font-semibold text-blue-300">
+                        Outlook Teams Connect
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Access email, calendar, and Microsoft Teams integration
+                      </p>
+                    </div>
+                  </div>
+                  <ExternalLink className="w-5 h-5 text-blue-400" />
+                </div>
+              </CardContent>
+            </Card>
+          </a>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
             <Card 

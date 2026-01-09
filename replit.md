@@ -134,6 +134,12 @@ Preferred communication style: Simple, everyday language.
 - **clsx & tailwind-merge**: Utility for conditional CSS class composition
 - **class-variance-authority**: Type-safe component variants
 
+### External Integrations
+- **Outlook Teams Connect**: External Replit app for Microsoft Outlook and Teams integration
+  - URL: https://outlook-teams-connect--RisaLuthor.replit.app
+  - Accessed from ERP Team Dashboard page
+  - Note: User dismissed built-in Replit Outlook connector, using external app instead
+
 ### Potential Future Integrations
 Based on build script allowlist, the application is configured to support:
 - Session management (express-session, connect-pg-simple, memorystore)
