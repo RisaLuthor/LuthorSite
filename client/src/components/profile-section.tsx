@@ -29,7 +29,7 @@ export function ProfileSection() {
 
           <div className="text-center lg:text-left flex-1">
             <p className="text-muted-foreground font-heading tracking-wider uppercase mb-2" data-testid="text-profile-label">
-              Kiearan Hologrem
+              Kieran Hologrem
             </p>
             
             <h2
@@ -47,7 +47,7 @@ export function ProfileSection() {
               className="font-heading text-lg lg:text-xl text-foreground/90 tracking-wide max-w-2xl"
               data-testid="text-profile-tagline"
             >
-              AI architecture. Security innovations. The embodiment of Kiearan.
+              AI architecture. Security innovations. The embodiment of Kieran.
             </p>
           </div>
         </div>

@@ -48,8 +48,8 @@
 ### Profile Section
 - Flex layout: image placeholder left, content right (desktop), stacked (mobile)
 - Circular avatar with glowing border ring
-- Name "Kiearan Hologrem" as heading
-- Tagline: "AI architecture. Security innovations. The embodiment of Kiearan."
+- Name "Kieran Hologrem" as heading
+- Tagline: "AI architecture. Security innovations. The embodiment of Kieran."
 - Glass-morphism card effect (backdrop-blur with subtle border)
 
 ### Feature Cards Grid
@@ -66,14 +66,14 @@ Each card includes:
 Positioned as sidebar or modal overlay
 
 **Header**:
-- "Kiearan's Demo Assistant" title
+- "Kieran's Demo Assistant" title
 - "NEW ⚡ Banter Mode" toggle switch (prominent)
 
 **Message Display**:
 - Scrollable conversation area with min-h-96
 - User messages: aligned right, rounded corners
 - Assistant messages: aligned left with avatar icon
-- Example messages visible: "Hello Kiearan, my name is Rias. I am your creator"
+- Example messages visible: "Hello Kieran, my name is Rias. I am your creator"
 - Error states shown: "Network error. Try again."
 
 **Input Area**:
@@ -133,7 +133,7 @@ Positioned as sidebar or modal overlay
 
 ## Images
 
-**Profile Avatar**: Placeholder for "Kiearan Hologrem" - cyberpunk-style portrait or abstract tech visualization
+**Profile Avatar**: Placeholder for "Kieran Hologrem" - cyberpunk-style portrait or abstract tech visualization
 
 **Background Elements**: Geometric patterns, grid overlays, and abstract tech visualizations - no photographic images needed for hero. Pure CSS/SVG effects create the futuristic atmosphere.
 

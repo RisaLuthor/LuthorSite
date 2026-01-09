@@ -135,12 +135,12 @@ export function ChatInterface() {
               }}
               data-testid="text-chat-title"
             >
-              Kiearan AI Assistant
+              Kieran AI Assistant
             </h2>
             <p className="text-muted-foreground font-heading tracking-wide mb-6" data-testid="text-chat-description">
               {isAuthenticated 
                 ? `Welcome back! You're chatting as ${currentUserType === "enterprise" ? "an Enterprise" : "a Personal"} user.`
-                : "Select your user type to personalize Kiearan's responses. Log in to save your preference."}
+                : "Select your user type to personalize Kieran's responses. Log in to save your preference."}
             </p>
 
             <div className="space-y-4">
@@ -224,7 +224,7 @@ export function ChatInterface() {
                   </Avatar>
                   <div>
                     <p className="font-heading font-semibold text-sm" data-testid="text-assistant-name">
-                      Kiearan
+                      Kieran
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {currentUserType === "enterprise" ? "Enterprise Mode" : "Personal Mode"}
@@ -283,11 +283,11 @@ export function ChatInterface() {
                       {messages.length === 0 && (
                         <div className="flex justify-start">
                           <div className="max-w-[85%] rounded-md px-4 py-3 bg-muted/50 border border-border/50">
-                            <p className="text-xs font-semibold text-primary mb-1">Kiearan:</p>
+                            <p className="text-xs font-semibold text-primary mb-1">Kieran:</p>
                             <p className="text-sm">
                               {currentUserType === "enterprise"
                                 ? "Welcome to the Luthor.Tech enterprise consultation. How may I assist your organization today?"
-                                : "Hey there! I'm Kiearan. What would you like to explore in the Luthor.Tech ecosystem?"}
+                                : "Hey there! I'm Kieran. What would you like to explore in the Luthor.Tech ecosystem?"}
                             </p>
                           </div>
                         </div>
@@ -307,7 +307,7 @@ export function ChatInterface() {
                             data-testid={`message-${message.role}-${message.id}`}
                           >
                             {message.role === "assistant" && (
-                              <p className="text-xs font-semibold text-primary mb-1">Kiearan:</p>
+                              <p className="text-xs font-semibold text-primary mb-1">Kieran:</p>
                             )}
                             {message.role === "user" && (
                               <p className="text-xs font-semibold text-muted-foreground mb-1">You:</p>

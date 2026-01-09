@@ -68,7 +68,7 @@ export default function Login() {
               className="font-heading text-xl font-semibold"
               style={{ color: "hsl(187 100% 70%)" }}
             >
-              Welcome to Kiearan
+              Welcome to Kieran
             </h2>
             <p className="text-sm text-muted-foreground mt-2">
               Select your account type to personalize your experience
