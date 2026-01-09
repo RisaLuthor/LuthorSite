@@ -64,6 +64,7 @@ const projects = [
     status: "Active",
     tags: ["Enterprise", "Dashboard", "Team Management"],
     icon: LayoutDashboard,
+    internalPath: "/projects/erp-dashboard",
   },
 ];
 

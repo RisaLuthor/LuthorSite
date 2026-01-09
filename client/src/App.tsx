@@ -18,6 +18,7 @@ import FeatureCeFiDeFi from "@/pages/feature-cefi-defi";
 import FeatureAICompanion from "@/pages/feature-ai-companion";
 import FeatureVoiceControl from "@/pages/feature-voice-control";
 import ProjectHolofans from "@/pages/project-holofans";
+import ProjectErpDashboard from "@/pages/project-erp-dashboard";
 import PixelArcArchive from "@/pages/pixelarc-archive";
 import AdminDashboard from "@/pages/admin-dashboard";
 import NotFound from "@/pages/not-found";
@@ -40,6 +41,7 @@ function Router() {
       <Route path="/features/voice-control" component={FeatureVoiceControl} />
       <Route path="/projects/holofans" component={ProjectHolofans} />
       <Route path="/projects/holofans/archive" component={PixelArcArchive} />
+      <Route path="/projects/erp-dashboard" component={ProjectErpDashboard} />
       <Route path="/admin" component={AdminDashboard} />
       <Route component={NotFound} />
     </Switch>
