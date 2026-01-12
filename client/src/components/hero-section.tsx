@@ -49,7 +49,7 @@ export function HeroSection() {
           }}
           data-testid="text-hero-title"
         >
-          RMLUTHOR.US
+          LUTHOR.TECH
         </h1>
 
         <div
