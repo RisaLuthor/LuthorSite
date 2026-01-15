@@ -21,6 +21,8 @@ import ProjectHolofans from "@/pages/project-holofans";
 import ProjectErpDashboard from "@/pages/project-erp-dashboard";
 import PixelArcArchive from "@/pages/pixelarc-archive";
 import AdminDashboard from "@/pages/admin-dashboard";
+import Labs from "@/pages/labs";
+import { LabKieranCore, LabSentinel, LabMnemosyne, LabAether, LabEthica } from "@/pages/lab-system-brief";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -43,6 +45,12 @@ function Router() {
       <Route path="/projects/holofans/archive" component={PixelArcArchive} />
       <Route path="/projects/erp-dashboard" component={ProjectErpDashboard} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/labs" component={Labs} />
+      <Route path="/labs/kieran-core" component={LabKieranCore} />
+      <Route path="/labs/sentinel" component={LabSentinel} />
+      <Route path="/labs/mnemosyne" component={LabMnemosyne} />
+      <Route path="/labs/aether" component={LabAether} />
+      <Route path="/labs/ethica" component={LabEthica} />
       <Route component={NotFound} />
     </Switch>
   );

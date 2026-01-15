@@ -1,0 +1,122 @@
+You are editing my existing website project for www.rmluthor.us.
+
+Goal:
+Add a new top-level navigation item called "Labs" with Luthor.Tech branding. 
+This section showcases my graduate capstone research and applied R&D systems.
+
+Design Style:
+- Dark mode
+- Sleek, high-tech
+- Premium feel
+- Subtle glow accents
+- Clean spacing
+- Modern sans-serif typography
+- Matches existing site aesthetic
+
+NAVIGATION
+1) Add "Labs" to the main navbar (place near Projects or after Projects).
+2) Route should be: /labs
+
+PAGE: /labs
+
+HERO SECTION
+Title: Labs
+Subtitle: Graduate capstone research + Luthor.Tech applied R&D.
+Subtext:
+"Distributed architecture. Persistent memory. Zero-trust security. Emotional intelligence. Ethical AI design."
+
+Buttons:
+Primary: "View GitHub"
+Link: https://github.com/RisaLuthor
+
+Secondary: "Read the Capstone"
+Link: /projects (or placeholder if needed)
+
+LAB CARDS GRID (5 total)
+
+Each card must include:
+- Title
+- One-line description
+- Status pill
+- 4–6 tags
+- Two buttons:
+   • System Brief
+   • Source
+
+CARD 1
+Title: Kieran Core
+Description:
+"Distributed AI orchestration engine: Mac mini core + Raspberry Pi edge nodes with encrypted coordination."
+Status: Building
+Tags: Distributed Systems, Edge, Orchestration, gRPC, Observability
+System Brief Link: /labs/kieran-core
+Source Link: https://github.com/RisaLuthor/kieran-core
+
+CARD 2
+Title: Sentinel
+Description:
+"Zero-trust security layer for AI agents: mTLS, device identity, attestation, policy enforcement, audit trails."
+Status: Designing
+Tags: Zero Trust, mTLS, IAM, Attestation, Security
+System Brief Link: /labs/sentinel
+Source Link: https://github.com/RisaLuthor/sentinel-zero-trust
+
+CARD 3
+Title: Mnemosyne
+Description:
+"Persistent memory engine with encrypted storage, vector recall, temporal decay, and retrieval evaluation."
+Status: Designing
+Tags: Memory, pgvector, Encryption, Retrieval, Evaluation
+System Brief Link: /labs/mnemosyne
+Source Link: https://github.com/RisaLuthor/mnemosyne-memory
+
+CARD 4
+Title: Aether
+Description:
+"Emotional intelligence engine: sentiment/state modeling and adaptive response tuning over time."
+Status: Planning
+Tags: Emotion AI, State Models, Personalization, Time-Series
+System Brief Link: /labs/aether
+Source Link: https://github.com/RisaLuthor/aether-emotion
+
+CARD 5
+Title: Ethica
+Description:
+"Ethical AI governance toolkit: consent, bias checks, explainability logs, and operational guardrails."
+Status: Planning
+Tags: AI Governance, Ethics, Auditability, Compliance
+System Brief Link: /labs/ethica
+Source Link: https://github.com/RisaLuthor/ethica-ai
+
+PLACEHOLDER SYSTEM BRIEF PAGES
+Create routes for:
+- /labs/kieran-core
+- /labs/sentinel
+- /labs/mnemosyne
+- /labs/aether
+- /labs/ethica
+
+Each System Brief page must include:
+- Hero title + subtitle
+- Sections:
+   • Problem
+   • Approach
+   • Architecture
+   • Roadmap
+- Diagram placeholder box
+- Button:
+   "View Source"
+   (links to the GitHub repo for that project)
+
+ENGINEERING REQUIREMENTS
+- Do not break existing routes
+- Mobile responsive
+- Navbar must work on all screen sizes
+- Maintain current theme consistency
+- Clean reusable components if possible
+
+After implementing, show me:
+1) Files changed/added
+2) Where navbar entry was added
+3) Preview of /labs layout
+4) Confirm all routes work (no 404s)

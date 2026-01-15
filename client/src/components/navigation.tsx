@@ -20,6 +20,7 @@ const navItems = [
   { label: "Skill Sets", href: "/services" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Projects", href: "/projects" },
+  { label: "Labs", href: "/labs" },
   { label: "Games", href: "/games" },
   { label: "Shop", href: "/shop" },
   { label: "Blog", href: "/blog" },
