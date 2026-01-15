@@ -101,7 +101,7 @@ export default function Projects() {
                 data-testid={`card-project-${project.id}`}
               >
                 <CardContent className="p-6 lg:p-8">
-                  <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="flex items-start justify-between gap-3 mb-4">
                     <div
                       className="w-12 h-12 rounded-md flex items-center justify-center shrink-0"
                       style={{

@@ -146,8 +146,9 @@ export function Navigation() {
           </div>
 
           <button
-            className="md:hidden p-2 text-foreground"
+            className="md:hidden p-3 -mr-2 text-foreground rounded-md active:bg-primary/10 transition-colors"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             data-testid="button-mobile-menu"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -156,14 +157,14 @@ export function Navigation() {
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border">
-          <div className="px-4 py-4 space-y-2">
+        <div className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <div className="px-4 py-3 space-y-1">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <span
-                  className={`block px-3 py-2 font-heading font-medium tracking-wide cursor-pointer ${
+                  className={`block px-4 py-3 rounded-md font-heading font-medium tracking-wide cursor-pointer transition-colors active:bg-primary/10 ${
                     location === item.href
-                      ? "text-primary"
+                      ? "text-primary bg-primary/5"
                       : "text-muted-foreground"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
@@ -173,11 +174,11 @@ export function Navigation() {
                 </span>
               </Link>
             ))}
-            <div className="flex items-center justify-between mt-4 gap-2">
+            <div className="flex items-center justify-between pt-4 pb-2 gap-3 border-t border-border/50 mt-2">
               <ThemeToggle />
               {isAuthenticated && user ? (
-                <div className="flex items-center gap-2 flex-1">
-                  <Avatar className="h-8 w-8">
+                <div className="flex items-center gap-3 flex-1">
+                  <Avatar className="h-9 w-9">
                     {user.profileImageUrl && (
                       <AvatarImage src={user.profileImageUrl} alt={user.firstName || "User"} />
                     )}
@@ -201,10 +202,10 @@ export function Navigation() {
                   </a>
                 </div>
               ) : (
-                <Link href="/login">
+                <Link href="/login" className="flex-1">
                   <Button
                     variant="outline"
-                    className="flex-1 font-heading tracking-wide border-primary/50 text-primary"
+                    className="w-full font-heading tracking-wide border-primary/50 text-primary"
                     onClick={() => setMobileMenuOpen(false)}
                     data-testid="button-mobile-login"
                   >
