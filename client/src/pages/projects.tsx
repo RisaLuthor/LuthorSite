@@ -3,7 +3,7 @@ import { Footer } from "@/components/footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github, Lock, Cpu, Shield, Zap, Wrench, Disc3, LayoutDashboard } from "lucide-react";
+import { ExternalLink, Github, Lock, Cpu, Shield, Zap, Wrench, Disc3, LayoutDashboard, BookOpen } from "lucide-react";
 import { Link } from "wouter";
 
 const projects = [
@@ -65,6 +65,15 @@ const projects = [
     tags: ["Enterprise", "Dashboard", "Team Management"],
     icon: LayoutDashboard,
     internalPath: "/projects/erp-dashboard",
+  },
+  {
+    id: "pagequest",
+    title: "PageQuest",
+    description: "An interactive galactic book quest adventure game. Explore the cosmos through an engaging narrative experience with branching storylines and discovery mechanics.",
+    status: "Active",
+    tags: ["Game", "Interactive", "Adventure"],
+    icon: BookOpen,
+    url: "/galactic-book-quest/index.html",
   },
 ];
 
