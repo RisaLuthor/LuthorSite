@@ -73,7 +73,7 @@ const projects = [
     status: "Active",
     tags: ["Game", "Interactive", "Literary"],
     icon: BookOpen,
-    url: "/galactic-book-quest/index.html",
+    url: "https://literary-ascent--risaluthor.replit.app",
   },
 ];
 
