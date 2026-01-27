@@ -73,7 +73,7 @@ const projects = [
     status: "Active",
     tags: ["Game", "Interactive", "Literary"],
     icon: BookOpen,
-    url: "https://literary-ascent--risaluthor.replit.app",
+    url: "https://literary-ascent.replit.app",
   },
 ];
 
