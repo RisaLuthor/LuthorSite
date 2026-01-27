@@ -68,10 +68,10 @@ const projects = [
   },
   {
     id: "pagequest",
-    title: "PageQuest",
-    description: "An interactive galactic book quest adventure game. Explore the cosmos through an engaging narrative experience with branching storylines and discovery mechanics.",
+    title: "PageQuest: Literary Ascent",
+    description: "An interactive literary adventure game where you ascend through the world of books. Explore engaging narratives with branching storylines and discovery mechanics.",
     status: "Active",
-    tags: ["Game", "Interactive", "Adventure"],
+    tags: ["Game", "Interactive", "Literary"],
     icon: BookOpen,
     url: "/galactic-book-quest/index.html",
   },
