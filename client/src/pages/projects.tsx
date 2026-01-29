@@ -1,12 +1,32 @@
+import { useState } from "react";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github, Lock, Cpu, Shield, Zap, Wrench, Disc3, LayoutDashboard, BookOpen } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ExternalLink, Github, Lock, Cpu, Shield, Zap, Wrench, Disc3, LayoutDashboard, BookOpen, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 
-const projects = [
+interface CaseStudy {
+  deliverables: string[];
+  tools: string[];
+  closing: string;
+}
+
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  tags: string[];
+  icon: React.ComponentType<{ className?: string }>;
+  url?: string;
+  internalPath?: string;
+  caseStudy?: CaseStudy;
+}
+
+const projects: Project[] = [
   {
     id: "cefi-defi-bridge",
     title: "CeFi-DeFi Bridge Protocol",
@@ -46,6 +66,17 @@ const projects = [
     status: "Completed",
     tags: ["Wix", "SEO", "Content Strategy", "AI Automation"],
     icon: Wrench,
+    caseStudy: {
+      deliverables: [
+        "Full Wix website management and ongoing maintenance",
+        "Site refresh with improved navigation and mobile UX",
+        "Daily blog publishing pipeline with consistent scheduling",
+        "SEO-focused content workflow and keyword optimization",
+        "AI agent setup for content drafting and automation"
+      ],
+      tools: ["Wix", "Wix SEO Tools", "AI Content Assistants", "Google Search Console", "Content Scheduling Systems"],
+      closing: "Project scope fulfilled. Platform transitioned to client management."
+    }
   },
   {
     id: "mp4-holofans",
@@ -157,6 +188,51 @@ export default function Projects() {
                       </Badge>
                     ))}
                   </div>
+
+                  {project.caseStudy && (
+                    <Collapsible className="mb-4">
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-between border-primary/30 text-primary"
+                          data-testid={`button-case-study-${project.id}`}
+                        >
+                          View Case Study Details
+                          <ChevronDown className="w-4 h-4 ml-2 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-4 space-y-4">
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-2">Scope & Deliverables</h4>
+                          <ul className="text-sm text-muted-foreground space-y-1.5">
+                            {project.caseStudy.deliverables.map((item, i) => (
+                              <li key={i} className="flex items-start gap-2">
+                                <span className="text-primary mt-1">•</span>
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-2">Tools & Stack</h4>
+                          <div className="flex flex-wrap gap-1.5">
+                            {project.caseStudy.tools.map((tool) => (
+                              <Badge
+                                key={tool}
+                                variant="outline"
+                                className="text-xs border-primary/30 text-primary/80"
+                              >
+                                {tool}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground italic border-t border-border/50 pt-3">
+                          {project.caseStudy.closing}
+                        </p>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  )}
 
                   {project.url && (
                     <Button
