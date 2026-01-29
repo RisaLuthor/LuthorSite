@@ -40,13 +40,12 @@ const projects = [
     icon: Lock,
   },
   {
-    id: "rvfixin",
-    title: "RVFixin.com",
-    description: "A comprehensive RV repair and maintenance resource website that I maintain and manage. Helping RV enthusiasts with troubleshooting guides, repair tutorials, and expert advice.",
-    status: "Active",
-    tags: ["Web Development", "Content Management", "RV Maintenance"],
+    id: "content-platform-refresh",
+    title: "Content Platform Refresh & Automation",
+    description: "Led a comprehensive website refresh for a niche content platform, including UX improvements, daily blog publishing pipeline, SEO-focused content workflows, and AI-assisted automation setup.",
+    status: "Completed",
+    tags: ["Wix", "SEO", "Content Strategy", "AI Automation"],
     icon: Wrench,
-    url: "https://rvfixin.com",
   },
   {
     id: "mp4-holofans",
