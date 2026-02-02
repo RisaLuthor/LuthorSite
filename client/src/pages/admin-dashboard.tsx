@@ -12,6 +12,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "wouter";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { 
   LayoutDashboard, 
   Plus, 
@@ -24,11 +25,14 @@ import {
   Calendar,
   LogIn,
   Shield,
-  AlertCircle,
   Send,
-  HardDrive
+  BarChart3,
+  FileText,
+  Users,
+  TrendingUp,
+  Activity
 } from "lucide-react";
-import { format, startOfDay, endOfDay, startOfWeek, endOfWeek } from "date-fns";
+import { format, startOfDay, endOfDay, subDays } from "date-fns";
 import type { WorkUpdate, PrintingProject } from "@shared/schema";
 
 interface CalendarEvent {
@@ -38,6 +42,110 @@ interface CalendarEvent {
   location?: string;
   start: { dateTime?: string; date?: string };
   end: { dateTime?: string; date?: string };
+}
+
+type AdminSection = "dashboard" | "content" | "analytics";
+
+const sidebarItems = [
+  { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
+  { id: "content" as const, label: "Content", icon: FileText },
+  { id: "analytics" as const, label: "Analytics", icon: BarChart3 },
+];
+
+const mockVisitorData = Array.from({ length: 31 }, (_, i) => ({
+  date: format(subDays(new Date(), 30 - i), 'MMM d'),
+  visits: Math.floor(Math.random() * 50) + 10,
+  pageViews: Math.floor(Math.random() * 100) + 20,
+}));
+
+function VisitorOverview() {
+  const totalVisits = mockVisitorData.reduce((sum, d) => sum + d.visits, 0);
+  const avgVisits = Math.round(totalVisits / mockVisitorData.length);
+  
+  return (
+    <Card className="bg-card/50 backdrop-blur-xl border-primary/20" style={{ boxShadow: "0 0 30px hsl(187 100% 50% / 0.1)" }}>
+      <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-3">
+          <Activity className="w-6 h-6 text-primary" />
+          <CardTitle className="font-display tracking-wider" style={{ color: "hsl(187 100% 50%)" }}>
+            Visits Overview
+          </CardTitle>
+        </div>
+        <Badge className="bg-primary/20 text-primary border-primary/30">
+          Last 30 Days
+        </Badge>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <div className="p-3 rounded-lg bg-background/50 border border-primary/20">
+            <div className="text-2xl font-display font-bold text-primary">{totalVisits}</div>
+            <div className="text-xs text-muted-foreground">Total Visits</div>
+          </div>
+          <div className="p-3 rounded-lg bg-background/50 border border-primary/20">
+            <div className="text-2xl font-display font-bold text-green-400">{avgVisits}</div>
+            <div className="text-xs text-muted-foreground">Avg/Day</div>
+          </div>
+          <div className="p-3 rounded-lg bg-background/50 border border-primary/20">
+            <div className="text-2xl font-display font-bold text-blue-400">{mockVisitorData[mockVisitorData.length - 1]?.visits || 0}</div>
+            <div className="text-xs text-muted-foreground">Today</div>
+          </div>
+          <div className="p-3 rounded-lg bg-background/50 border border-primary/20">
+            <div className="flex items-center gap-1">
+              <TrendingUp className="w-4 h-4 text-green-400" />
+              <span className="text-2xl font-display font-bold text-green-400">+12%</span>
+            </div>
+            <div className="text-xs text-muted-foreground">vs Last Month</div>
+          </div>
+        </div>
+        
+        <div className="h-[250px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={mockVisitorData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(187 100% 50% / 0.1)" />
+              <XAxis 
+                dataKey="date" 
+                stroke="hsl(var(--muted-foreground))" 
+                fontSize={10}
+                tickLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis 
+                stroke="hsl(var(--muted-foreground))" 
+                fontSize={10}
+                tickLine={false}
+                axisLine={false}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: "hsl(var(--card))", 
+                  border: "1px solid hsl(187 100% 50% / 0.3)",
+                  borderRadius: "8px",
+                  fontSize: "12px"
+                }}
+              />
+              <Legend />
+              <Line 
+                type="monotone" 
+                dataKey="visits" 
+                stroke="hsl(187 100% 50%)" 
+                strokeWidth={2}
+                dot={false}
+                name="Visits"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="pageViews" 
+                stroke="hsl(210 100% 60%)" 
+                strokeWidth={2}
+                dot={false}
+                name="Page Views"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 function TodaysWorkSection() {
@@ -348,7 +456,7 @@ function PrintingProjectsManager() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="bg-background/50 border-primary/20 focus:border-primary min-h-[80px]"
-            data-testid="input-admin-project-description"
+            data-testid="input-admin-project-desc"
           />
           <div className="flex gap-2 flex-wrap">
             <Select value={category} onValueChange={setCategory}>
@@ -356,10 +464,10 @@ function PrintingProjectsManager() {
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="nas-case">NAS Case</SelectItem>
-                <SelectItem value="server-case">Server Case</SelectItem>
                 <SelectItem value="custom">Custom</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="functional">Functional</SelectItem>
+                <SelectItem value="decorative">Decorative</SelectItem>
+                <SelectItem value="prototype">Prototype</SelectItem>
               </SelectContent>
             </Select>
             <Select value={status} onValueChange={setStatus}>
@@ -385,11 +493,11 @@ function PrintingProjectsManager() {
         </div>
 
         <div className="space-y-3">
-          <h3 className="font-heading font-semibold text-sm text-muted-foreground">Current Projects</h3>
+          <h3 className="font-heading font-semibold text-sm text-muted-foreground">Current Projects ({projects.length})</h3>
           {isLoading ? (
             <div className="text-center py-4 text-muted-foreground">Loading projects...</div>
           ) : projects.length === 0 ? (
-            <div className="text-center py-4 text-muted-foreground">No projects yet</div>
+            <div className="text-center py-4 text-muted-foreground">No projects yet. Add your first one above!</div>
           ) : (
             <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
               {projects.map((project) => (
@@ -401,10 +509,9 @@ function PrintingProjectsManager() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <HardDrive className="w-4 h-4 text-primary shrink-0" />
                         <h4 className="font-heading font-semibold text-sm">{project.title}</h4>
                         <Badge className={getStatusColor(project.status)}>
-                          {project.status?.replace('-', ' ')}
+                          {project.status}
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{project.description}</p>
@@ -431,32 +538,23 @@ function PrintingProjectsManager() {
 }
 
 export default function AdminDashboard() {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const [activeSection, setActiveSection] = useState<AdminSection>("dashboard");
+
   const { data: adminCheck, isLoading: adminLoading } = useQuery<{ isAdmin: boolean }>({
     queryKey: ['/api/auth/is-admin'],
-    queryFn: () => fetch('/api/auth/is-admin').then(r => r.json()),
     enabled: isAuthenticated,
   });
 
   const isAdmin = adminCheck?.isAdmin ?? false;
-  const isLoading = authLoading || adminLoading;
 
-  if (isLoading) {
+  if (isLoading || (isAuthenticated && adminLoading)) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <main className="pt-24 pb-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center py-20">
-              <div className="animate-pulse">
-                <LayoutDashboard className="w-16 h-16 mx-auto mb-4 text-primary/30" />
-                <p className="text-muted-foreground">Loading dashboard...</p>
-              </div>
-            </div>
-          </div>
-        </main>
-        <Footer />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -468,20 +566,20 @@ export default function AdminDashboard() {
         <main className="pt-24 pb-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center py-20">
-              <LogIn className="w-16 h-16 mx-auto mb-4 text-primary/50" />
+              <Shield className="w-16 h-16 mx-auto mb-4 text-primary/50" />
               <h1 
                 className="font-display text-2xl font-bold tracking-wider mb-4"
                 style={{ color: "hsl(187 100% 50%)" }}
               >
-                Login Required
+                Admin Access Required
               </h1>
               <p className="text-muted-foreground mb-6">
-                Please log in with Replit to access the admin dashboard.
+                Please log in to access the admin dashboard.
               </p>
               <Link href="/login">
-                <Button className="gap-2" data-testid="button-login-redirect">
+                <Button className="gap-2">
                   <LogIn className="w-4 h-4" />
-                  Go to Login
+                  Log In
                 </Button>
               </Link>
             </div>
@@ -523,39 +621,193 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <main className="pt-24 pb-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <Shield className="w-8 h-8 text-primary" />
-              <h1
-                className="font-display text-3xl sm:text-4xl font-bold tracking-wider"
-                style={{
-                  color: "hsl(187 100% 50%)",
-                  textShadow: "0 0 10px hsl(187 100% 50%), 0 0 20px hsl(187 100% 50% / 0.5)",
-                }}
-                data-testid="text-admin-title"
+      <div className="flex pt-16">
+        <aside className="hidden lg:flex flex-col w-64 min-h-[calc(100vh-4rem)] bg-card/30 backdrop-blur-xl border-r border-primary/20 p-4 sticky top-16">
+          <div className="mb-6 p-3 rounded-lg bg-primary/10 border border-primary/30">
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-primary" />
+              <span className="text-sm font-heading text-primary">Logged in as admin</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 truncate">{user?.email}</p>
+          </div>
+          
+          <nav className="space-y-1">
+            {sidebarItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveSection(item.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                  activeSection === item.id
+                    ? "bg-primary/20 text-primary border border-primary/30"
+                    : "text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+                }`}
+                data-testid={`button-admin-nav-${item.id}`}
               >
-                Admin Dashboard
-              </h1>
+                <item.icon className="w-5 h-5" />
+                <span className="font-heading">{item.label}</span>
+              </button>
+            ))}
+          </nav>
+          
+          <div className="mt-auto pt-6">
+            <div className="p-3 rounded-lg bg-background/50 border border-primary/10">
+              <h4 className="text-xs font-semibold text-muted-foreground mb-2">Quick Stats</h4>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Total Updates</span>
+                  <Badge variant="outline" className="text-xs">12</Badge>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">3D Projects</span>
+                  <Badge variant="outline" className="text-xs">5</Badge>
+                </div>
+              </div>
             </div>
-            <p className="text-muted-foreground font-heading tracking-wide">
-              Welcome back, {user?.firstName || 'Admin'}! Manage your blog content here.
-            </p>
           </div>
+        </aside>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="space-y-6">
-              <TodaysWorkSection />
-              <PrintingProjectsManager />
+        <main className="flex-1 pb-16">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <div className="lg:hidden mb-6 flex gap-2 overflow-x-auto pb-2">
+              {sidebarItems.map((item) => (
+                <Button
+                  key={item.id}
+                  variant={activeSection === item.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setActiveSection(item.id)}
+                  className="gap-2 shrink-0"
+                  data-testid={`button-admin-mobile-nav-${item.id}`}
+                >
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                </Button>
+              ))}
             </div>
-            <div className="space-y-6">
-              <WorkUpdatesManager />
+
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-2">
+                <h1
+                  className="font-display text-2xl sm:text-3xl font-bold tracking-wider"
+                  style={{
+                    color: "hsl(187 100% 50%)",
+                    textShadow: "0 0 10px hsl(187 100% 50%), 0 0 20px hsl(187 100% 50% / 0.5)",
+                  }}
+                  data-testid="text-admin-title"
+                >
+                  {activeSection === "dashboard" && "Dashboard"}
+                  {activeSection === "content" && "Content Management"}
+                  {activeSection === "analytics" && "Analytics"}
+                </h1>
+              </div>
+              <p className="text-muted-foreground font-heading tracking-wide">
+                Welcome back, {user?.firstName || 'Admin'}!
+              </p>
             </div>
+
+            {activeSection === "dashboard" && (
+              <div className="space-y-6">
+                <VisitorOverview />
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <TodaysWorkSection />
+                  <Card className="bg-card/50 backdrop-blur-xl border-primary/20" style={{ boxShadow: "0 0 30px hsl(187 100% 50% / 0.1)" }}>
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <Users className="w-6 h-6 text-primary" />
+                        <CardTitle className="font-display tracking-wider" style={{ color: "hsl(187 100% 50%)" }}>
+                          Quick Actions
+                        </CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start gap-3 border-primary/30"
+                        onClick={() => setActiveSection("content")}
+                      >
+                        <Edit className="w-4 h-4" />
+                        Post New Update
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start gap-3 border-primary/30"
+                        onClick={() => setActiveSection("content")}
+                      >
+                        <Printer className="w-4 h-4" />
+                        Add 3D Project
+                      </Button>
+                      <Link href="/blog">
+                        <Button variant="outline" className="w-full justify-start gap-3 border-primary/30">
+                          <FileText className="w-4 h-4" />
+                          View Blog
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {activeSection === "content" && (
+              <div className="grid gap-6 lg:grid-cols-2">
+                <WorkUpdatesManager />
+                <PrintingProjectsManager />
+              </div>
+            )}
+
+            {activeSection === "analytics" && (
+              <div className="space-y-6">
+                <VisitorOverview />
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  <Card className="bg-card/50 backdrop-blur-xl border-primary/20">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <Users className="w-8 h-8 text-primary" />
+                        <div>
+                          <div className="text-2xl font-display font-bold">847</div>
+                          <div className="text-sm text-muted-foreground">Total Users</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-green-400">
+                        <TrendingUp className="w-4 h-4" />
+                        +23% from last month
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-card/50 backdrop-blur-xl border-primary/20">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <FileText className="w-8 h-8 text-blue-400" />
+                        <div>
+                          <div className="text-2xl font-display font-bold">24</div>
+                          <div className="text-sm text-muted-foreground">Blog Posts</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-green-400">
+                        <TrendingUp className="w-4 h-4" />
+                        +5 this month
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-card/50 backdrop-blur-xl border-primary/20">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <Activity className="w-8 h-8 text-green-400" />
+                        <div>
+                          <div className="text-2xl font-display font-bold">99.9%</div>
+                          <div className="text-sm text-muted-foreground">Uptime</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        Last 30 days
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      </main>
-      <Footer />
+        </main>
+      </div>
     </div>
   );
 }
