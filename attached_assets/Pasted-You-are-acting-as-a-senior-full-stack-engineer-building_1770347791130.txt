@@ -1,0 +1,57 @@
+You are acting as a senior full-stack engineer building a production-ready admin control plane.
+
+Goal:
+Use the existing Core Dashboard as the admin landing page after login for the Luthor.Tech / RMLuthor.us website.
+
+Requirements:
+
+1. Routing & Structure
+- Implement a protected admin route structure:
+  /admin/login
+  /admin/dashboard
+  /admin/projects
+  /admin/modules
+  /admin/settings
+- The Core Dashboard must load at /admin/dashboard and be inaccessible without authentication.
+
+2. Authentication
+- Implement backend authentication (session-based or JWT).
+- Create a secure login page at /admin/login.
+- Credentials must be validated on the backend.
+- Store admin credentials in environment variables (ADMIN_EMAIL, ADMIN_PASSWORD).
+- On successful login, redirect the user to /admin/dashboard.
+
+3. Authorization Middleware
+- Add backend middleware to protect all /admin/* routes.
+- If the user is not authenticated, redirect them to /admin/login.
+- Ensure authorization is enforced server-side (not frontend-only).
+
+4. Session / Token Handling
+- Persist login state across page refreshes.
+- Add logout functionality that clears the session/token and redirects to /admin/login.
+
+5. Dashboard Integration
+- Reuse the existing Core Dashboard UI without redesigning it.
+- Connect dashboard data to existing API endpoints (projects, modules, metrics).
+- Ensure CRUD actions remain functional behind authentication.
+
+6. Security & Configuration
+- Move all secrets to environment variables.
+- Add basic input validation and error handling.
+- Log authentication events to the server console.
+
+7. Documentation
+- Update README.md to include:
+  - Admin login flow
+  - Route structure
+  - Security model
+  - Environment variables required
+  - How to run locally vs production
+
+Constraints:
+- Do not expose the admin dashboard publicly.
+- Do not remove existing functionality.
+- Do not hardcode credentials.
+- Keep architecture clean and scalable.
+
+This admin dashboard is the control plane for the platform and must be treated as production infrastructure.
