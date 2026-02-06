@@ -419,8 +419,18 @@ export async function registerRoutes(
   app.get("/api/auth/is-admin", async (req: any, res) => {
     const user = req.user as any;
     const adminEmail = process.env.ADMIN_EMAIL;
-    const userEmail = user?.claims?.email;
-    const isAdmin = !!adminEmail && userEmail === adminEmail;
+    const claimsEmail = user?.claims?.email;
+    const userId = user?.claims?.sub;
+
+    let dbEmail: string | undefined;
+    if (userId) {
+      try {
+        const dbUser = await storage.getUser(userId);
+        dbEmail = dbUser?.email ?? undefined;
+      } catch {}
+    }
+
+    const isAdmin = !!adminEmail && (claimsEmail === adminEmail || dbEmail === adminEmail);
     res.json({ isAdmin });
   });
 

@@ -165,9 +165,20 @@ export const isAdmin: RequestHandler = async (req, res, next) => {
   }
 
   const adminEmail = process.env.ADMIN_EMAIL;
-  const userEmail = user?.claims?.email;
+  const claimsEmail = user?.claims?.email;
+  const userId = user?.claims?.sub;
 
-  if (!adminEmail || userEmail !== adminEmail) {
+  let isAdminUser = !!adminEmail && claimsEmail === adminEmail;
+
+  if (!isAdminUser && userId && adminEmail) {
+    try {
+      const { storage } = await import("./storage");
+      const dbUser = await storage.getUser(userId);
+      isAdminUser = dbUser?.email === adminEmail;
+    } catch {}
+  }
+
+  if (!isAdminUser) {
     return res.status(403).json({ message: "Forbidden - Admin access required" });
   }
 
