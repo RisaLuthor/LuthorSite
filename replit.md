@@ -39,7 +39,20 @@ Preferred communication style: Simple, everyday language.
 
 **API Design**: RESTful API with JSON responses:
 - GET /api/auth/user - Get current authenticated user
+- GET /api/auth/is-admin - Check admin status (server-side ADMIN_EMAIL verification)
 - PATCH /api/auth/user/type - Update user's account type (personal/enterprise)
+- GET /api/projects - List all projects with attached case studies (public)
+- GET /api/projects/:slug - Get single project by slug (public)
+- POST /api/projects - Create project (admin)
+- PATCH /api/projects/:id - Update project (admin)
+- DELETE /api/projects/:id - Delete project (admin)
+- POST /api/case-studies - Create case study (admin)
+- PATCH /api/case-studies/:id - Update case study (admin)
+- DELETE /api/case-studies/:id - Delete case study (admin)
+- GET /api/services - List all services (public)
+- POST /api/services - Create service (admin)
+- PATCH /api/services/:id - Update service (admin)
+- DELETE /api/services/:id - Delete service (admin)
 - GET /api/chat/messages - Retrieve chat messages (scoped to user or anonymous)
 - POST /api/chat/messages - Create new chat message with AI response
 - DELETE /api/chat/messages - Clear chat history
@@ -47,11 +60,12 @@ Preferred communication style: Simple, everyday language.
 - POST /api/holograms/upload - Create custom hologram from user upload
 - GET /api/holograms/user - Get user's hologram uploads
 - GET /api/holograms/download/:id - Download generated hologram
+- POST /api/seed - Seed initial data (admin)
 - GET /api/login - Initiate Replit OAuth flow
 - GET /api/callback - Handle OAuth callback
 - GET /api/logout - End user session
 
-**Storage Layer**: DatabaseStorage class with Drizzle ORM backed by Neon PostgreSQL (using HTTP adapter for reliability). Implements IStorage interface for user management, chat messages, and contact submissions.
+**Storage Layer**: DatabaseStorage class with Drizzle ORM backed by Neon PostgreSQL (using HTTP adapter for reliability). Implements IStorage interface for user management, chat messages, contact submissions, portfolio projects, services, and case studies.
 
 **Request Handling**: 
 - Express middleware for JSON parsing with raw body preservation (for webhook verification)
@@ -69,9 +83,16 @@ Preferred communication style: Simple, everyday language.
 **Tables**:
 - `sessions`: Session storage for Replit Auth with sid, sess (JSONB), and expire columns
 - `users`: User profiles with id, email, firstName, lastName, profileImageUrl, userType (personal/enterprise), timestamps
+- `projects`: Portfolio projects with id (UUID), slug (unique), title, description, status, tags (text array), icon, url, internalPath, sortOrder
+- `case_studies`: Case study details linked to projects via projectId FK - deliverables (text array), tools (text array), closing
+- `services`: Service/skill set offerings with id (UUID), title, description, icon, features (text array), highlight, sortOrder
 - `chat_messages`: Chat history with id, content, role (user/assistant), userType, userId (optional)
 - `contact_submissions`: Contact form entries with id, name, email, subject, message, createdAt
 - `hologram_uploads`: Custom hologram creations with id, userId, imageUrl, customMessage, voiceUrl, color, style, status, downloadUrl, createdAt
+- `work_updates`: Blog-style work updates with title, content, category
+- `work_update_reactions`: Visitor reactions on work updates
+- `blog_comments`: Comments on blog posts
+- `printing_projects`: 3D printing project gallery entries
 
 **Schema Validation**: Zod schemas generated from Drizzle table definitions for runtime validation, ensuring type safety across the stack.
 

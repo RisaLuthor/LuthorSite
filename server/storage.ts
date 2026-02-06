@@ -9,6 +9,9 @@ import {
   blogComments,
   printingProjects,
   workUpdateReactions,
+  projects,
+  caseStudies,
+  services,
   type User, 
   type UpsertUser, 
   type ChatMessage, 
@@ -28,7 +31,13 @@ import {
   type PrintingProject,
   type InsertPrintingProject,
   type WorkUpdateReaction,
-  type InsertWorkUpdateReaction
+  type InsertWorkUpdateReaction,
+  type Project,
+  type InsertProject,
+  type CaseStudy,
+  type InsertCaseStudy,
+  type Service,
+  type InsertService,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, isNull, desc, and, sql } from "drizzle-orm";
@@ -66,6 +75,22 @@ export interface IStorage {
   getReactionsForUpdate(workUpdateId: string): Promise<{ like: number; love: number; dislike: number }>;
   getUserReaction(workUpdateId: string, visitorId: string): Promise<WorkUpdateReaction | undefined>;
   toggleReaction(workUpdateId: string, visitorId: string, reactionType: "like" | "love" | "dislike"): Promise<void>;
+  // Projects
+  getProjects(): Promise<Project[]>;
+  getProjectBySlug(slug: string): Promise<Project | undefined>;
+  createProject(project: InsertProject): Promise<Project>;
+  updateProject(id: string, data: Partial<InsertProject>): Promise<Project | undefined>;
+  deleteProject(id: string): Promise<void>;
+  // Case Studies
+  getCaseStudyByProjectId(projectId: string): Promise<CaseStudy | undefined>;
+  createCaseStudy(caseStudy: InsertCaseStudy): Promise<CaseStudy>;
+  updateCaseStudy(id: string, data: Partial<InsertCaseStudy>): Promise<CaseStudy | undefined>;
+  deleteCaseStudy(id: string): Promise<void>;
+  // Services
+  getServices(): Promise<Service[]>;
+  createService(service: InsertService): Promise<Service>;
+  updateService(id: string, data: Partial<InsertService>): Promise<Service | undefined>;
+  deleteService(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -393,6 +418,91 @@ export class DatabaseStorage implements IStorage {
           reactionType,
         });
     }
+  }
+
+  // Projects
+  async getProjects(): Promise<Project[]> {
+    return await db.select().from(projects).orderBy(projects.sortOrder, desc(projects.createdAt));
+  }
+
+  async getProjectBySlug(slug: string): Promise<Project | undefined> {
+    const [project] = await db.select().from(projects).where(eq(projects.slug, slug));
+    return project;
+  }
+
+  async createProject(project: InsertProject): Promise<Project> {
+    const [newProject] = await db
+      .insert(projects)
+      .values(project)
+      .returning();
+    return newProject;
+  }
+
+  async updateProject(id: string, data: Partial<InsertProject>): Promise<Project | undefined> {
+    const [updated] = await db
+      .update(projects)
+      .set(data)
+      .where(eq(projects.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    await db.delete(caseStudies).where(eq(caseStudies.projectId, id));
+    await db.delete(projects).where(eq(projects.id, id));
+  }
+
+  // Case Studies
+  async getCaseStudyByProjectId(projectId: string): Promise<CaseStudy | undefined> {
+    const [cs] = await db.select().from(caseStudies).where(eq(caseStudies.projectId, projectId));
+    return cs;
+  }
+
+  async createCaseStudy(caseStudy: InsertCaseStudy): Promise<CaseStudy> {
+    const [newCs] = await db
+      .insert(caseStudies)
+      .values(caseStudy)
+      .returning();
+    return newCs;
+  }
+
+  async updateCaseStudy(id: string, data: Partial<InsertCaseStudy>): Promise<CaseStudy | undefined> {
+    const [updated] = await db
+      .update(caseStudies)
+      .set(data)
+      .where(eq(caseStudies.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteCaseStudy(id: string): Promise<void> {
+    await db.delete(caseStudies).where(eq(caseStudies.id, id));
+  }
+
+  // Services
+  async getServices(): Promise<Service[]> {
+    return await db.select().from(services).orderBy(services.sortOrder, desc(services.createdAt));
+  }
+
+  async createService(service: InsertService): Promise<Service> {
+    const [newService] = await db
+      .insert(services)
+      .values(service)
+      .returning();
+    return newService;
+  }
+
+  async updateService(id: string, data: Partial<InsertService>): Promise<Service | undefined> {
+    const [updated] = await db
+      .update(services)
+      .set(data)
+      .where(eq(services.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteService(id: string): Promise<void> {
+    await db.delete(services).where(eq(services.id, id));
   }
 }
 

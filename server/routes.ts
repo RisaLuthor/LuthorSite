@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertChatMessageSchema, insertContactSubmissionSchema, insertHologramUploadSchema, insertWorkUpdateSchema, insertBlogCommentSchema, insertPrintingProjectSchema, type KieranProfile, type KieranMemory } from "@shared/schema";
+import { insertChatMessageSchema, insertContactSubmissionSchema, insertHologramUploadSchema, insertWorkUpdateSchema, insertBlogCommentSchema, insertPrintingProjectSchema, insertProjectSchema, insertCaseStudySchema, insertServiceSchema, type KieranProfile, type KieranMemory } from "@shared/schema";
 import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
 import OpenAI from "openai";
 import { getCalendarEvents } from "./googleCalendar";
@@ -542,6 +542,208 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Delete printing project error:", error);
       res.status(500).json({ error: "Failed to delete printing project" });
+    }
+  });
+
+  // =====================
+  // Portfolio Projects API
+  // =====================
+  app.get("/api/projects", async (_req, res) => {
+    try {
+      const allProjects = await storage.getProjects();
+      const projectsWithCaseStudies = await Promise.all(
+        allProjects.map(async (project) => {
+          const caseStudy = await storage.getCaseStudyByProjectId(project.id);
+          return { ...project, caseStudy: caseStudy || null };
+        })
+      );
+      res.json(projectsWithCaseStudies);
+    } catch (error) {
+      console.error("Get projects error:", error);
+      res.status(500).json({ error: "Failed to fetch projects" });
+    }
+  });
+
+  app.get("/api/projects/:slug", async (req, res) => {
+    try {
+      const project = await storage.getProjectBySlug(req.params.slug);
+      if (!project) return res.status(404).json({ error: "Project not found" });
+      const caseStudy = await storage.getCaseStudyByProjectId(project.id);
+      res.json({ ...project, caseStudy: caseStudy || null });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch project" });
+    }
+  });
+
+  app.post("/api/projects", isAdmin, async (req: any, res) => {
+    try {
+      const result = insertProjectSchema.safeParse(req.body);
+      if (!result.success) return res.status(400).json({ error: result.error.flatten() });
+      const project = await storage.createProject(result.data);
+      res.json(project);
+    } catch (error) {
+      console.error("Create project error:", error);
+      res.status(500).json({ error: "Failed to create project" });
+    }
+  });
+
+  app.patch("/api/projects/:id", isAdmin, async (req: any, res) => {
+    try {
+      const project = await storage.updateProject(req.params.id, req.body);
+      if (!project) return res.status(404).json({ error: "Project not found" });
+      res.json(project);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update project" });
+    }
+  });
+
+  app.delete("/api/projects/:id", isAdmin, async (req: any, res) => {
+    try {
+      await storage.deleteProject(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete project" });
+    }
+  });
+
+  // =====================
+  // Case Studies API
+  // =====================
+  app.post("/api/case-studies", isAdmin, async (req: any, res) => {
+    try {
+      const result = insertCaseStudySchema.safeParse(req.body);
+      if (!result.success) return res.status(400).json({ error: result.error.flatten() });
+      const cs = await storage.createCaseStudy(result.data);
+      res.json(cs);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create case study" });
+    }
+  });
+
+  app.patch("/api/case-studies/:id", isAdmin, async (req: any, res) => {
+    try {
+      const cs = await storage.updateCaseStudy(req.params.id, req.body);
+      if (!cs) return res.status(404).json({ error: "Case study not found" });
+      res.json(cs);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update case study" });
+    }
+  });
+
+  app.delete("/api/case-studies/:id", isAdmin, async (req: any, res) => {
+    try {
+      await storage.deleteCaseStudy(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete case study" });
+    }
+  });
+
+  // =====================
+  // Services API
+  // =====================
+  app.get("/api/services", async (_req, res) => {
+    try {
+      const allServices = await storage.getServices();
+      res.json(allServices);
+    } catch (error) {
+      console.error("Get services error:", error);
+      res.status(500).json({ error: "Failed to fetch services" });
+    }
+  });
+
+  app.post("/api/services", isAdmin, async (req: any, res) => {
+    try {
+      const result = insertServiceSchema.safeParse(req.body);
+      if (!result.success) return res.status(400).json({ error: result.error.flatten() });
+      const service = await storage.createService(result.data);
+      res.json(service);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create service" });
+    }
+  });
+
+  app.patch("/api/services/:id", isAdmin, async (req: any, res) => {
+    try {
+      const service = await storage.updateService(req.params.id, req.body);
+      if (!service) return res.status(404).json({ error: "Service not found" });
+      res.json(service);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update service" });
+    }
+  });
+
+  app.delete("/api/services/:id", isAdmin, async (req: any, res) => {
+    try {
+      await storage.deleteService(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete service" });
+    }
+  });
+
+  // =====================
+  // Seed endpoint (admin-only, populates initial data)
+  // =====================
+  app.post("/api/seed", isAdmin, async (req: any, res) => {
+    try {
+      const existingProjects = await storage.getProjects();
+      const existingServices = await storage.getServices();
+
+      if (existingProjects.length > 0 || existingServices.length > 0) {
+        return res.json({ message: "Data already seeded", projects: existingProjects.length, services: existingServices.length });
+      }
+
+      const projectSeedData = [
+        { slug: "cefi-defi-bridge", title: "CeFi-DeFi Bridge Protocol", description: "A next-generation protocol enabling seamless interoperability between centralized and decentralized finance ecosystems.", status: "Active" as const, tags: ["Blockchain", "Finance", "Security"], icon: "Zap", sortOrder: 1 },
+        { slug: "neural-core", title: "Neural Core AI Engine", description: "Advanced neural network architecture powering the Luthor.Tech AI ecosystem with real-time learning capabilities.", status: "Development" as const, tags: ["AI", "Machine Learning", "Neural Networks"], icon: "Cpu", sortOrder: 2 },
+        { slug: "voice-auth", title: "Voice Authentication System", description: "Military-grade voice recognition and authentication system with biometric verification protocols.", status: "Active" as const, tags: ["Security", "Voice", "Biometrics"], icon: "Shield", sortOrder: 3 },
+        { slug: "quantum-encrypt", title: "Quantum Encryption Layer", description: "Post-quantum cryptography implementation for future-proof secure communications across all Luthor.Tech systems.", status: "Research" as const, tags: ["Cryptography", "Quantum", "Security"], icon: "Lock", sortOrder: 4 },
+        { slug: "content-platform-refresh", title: "Content Platform Refresh & Automation", description: "Led a comprehensive website refresh for a niche content platform, including UX improvements, daily blog publishing pipeline, SEO-focused content workflows, and AI-assisted automation setup.", status: "Completed" as const, tags: ["Wix", "SEO", "Content Strategy", "AI Automation"], icon: "Wrench", sortOrder: 5 },
+        { slug: "mp4-holofans", title: "MP4 Holographic Display Fans", description: "Experience the future of visual display with our holographic fan technology. Browse 500+ ready-to-use holograms or create your own custom holographic content with personalized messages and voice recordings.", status: "Active" as const, tags: ["Holographic Tech", "3D Display", "Custom Media"], icon: "Disc3", internalPath: "/projects/holofans", sortOrder: 6 },
+        { slug: "erp-team-dashboard", title: "ERP Team Dashboard", description: "Centralized enterprise resource planning dashboard for team coordination, project tracking, and workflow management. Streamlines operations with real-time data visualization and collaborative tools.", status: "Active" as const, tags: ["Enterprise", "Dashboard", "Team Management"], icon: "LayoutDashboard", internalPath: "/projects/erp-dashboard", sortOrder: 7 },
+        { slug: "pagequest", title: "PageQuest: Literary Ascent", description: "An interactive literary adventure game where you ascend through the world of books. Explore engaging narratives with branching storylines and discovery mechanics.", status: "Active" as const, tags: ["Game", "Interactive", "Literary"], icon: "BookOpen", url: "https://literary-ascent.replit.app", sortOrder: 8 },
+      ];
+
+      const createdProjects = [];
+      for (const p of projectSeedData) {
+        const created = await storage.createProject(p);
+        createdProjects.push(created);
+      }
+
+      const contentPlatformProject = createdProjects.find(p => p.slug === "content-platform-refresh");
+      if (contentPlatformProject) {
+        await storage.createCaseStudy({
+          projectId: contentPlatformProject.id,
+          deliverables: [
+            "Full Wix website management and ongoing maintenance",
+            "Site refresh with improved navigation and mobile UX",
+            "Daily blog publishing pipeline with consistent scheduling",
+            "SEO-focused content workflow and keyword optimization",
+            "AI agent setup for content drafting and automation",
+          ],
+          tools: ["Wix", "Wix SEO Tools", "AI Content Assistants", "Google Search Console", "Content Scheduling Systems"],
+          closing: "Project scope fulfilled. Platform transitioned to client management.",
+        });
+      }
+
+      const serviceSeedData = [
+        { title: "AI & Machine Learning Solutions", description: "Custom AI-driven applications, ML model deployment, and intelligent automation systems tailored to your business needs.", icon: "Brain", features: ["Custom AI Assistant Development", "ML Model Integration & Deployment", "AI Governance & Compliance", "Natural Language Processing", "Predictive Analytics"], highlight: true, sortOrder: 1 },
+        { title: "Full-Stack Development", description: "End-to-end web application development using modern technologies and best practices for scalable, maintainable solutions.", icon: "Code", features: ["React & TypeScript Applications", "Node.js Backend Development", "RESTful API Design", "Database Architecture", "Cloud Deployment"], highlight: false, sortOrder: 2 },
+        { title: "Enterprise Systems Integration", description: "Seamless integration of enterprise platforms like PeopleSoft with modern technologies and automation workflows.", icon: "Server", features: ["PeopleSoft HCM Optimization", "Active Directory Integration", "Payroll System Modernization", "MFA Implementation", "Legacy System Upgrades"], highlight: false, sortOrder: 3 },
+        { title: "Database Solutions", description: "Expert database design, optimization, and management for Oracle and SQL Server enterprise environments.", icon: "Database", features: ["Oracle & SQL Server Expertise", "Data Modeling & Architecture", "Performance Optimization", "Data Migration Services", "Enterprise Data Workflows"], highlight: false, sortOrder: 4 },
+        { title: "Cloud Architecture", description: "Design and implementation of cloud-native solutions with focus on scalability, security, and cost efficiency.", icon: "Cloud", features: ["Cloud Migration Strategy", "Infrastructure as Code", "Containerization (Docker/K8s)", "Serverless Architecture", "Multi-Cloud Solutions"], highlight: false, sortOrder: 5 },
+        { title: "Security & Compliance", description: "Comprehensive security solutions ensuring your systems meet industry standards and regulatory requirements.", icon: "Shield", features: ["Security Audits & Assessment", "Compliance Automation", "Identity & Access Management", "Risk Monitoring", "Governance Frameworks"], highlight: false, sortOrder: 6 },
+      ];
+
+      for (const s of serviceSeedData) {
+        await storage.createService(s);
+      }
+
+      res.json({ message: "Seed complete", projects: createdProjects.length, services: serviceSeedData.length });
+    } catch (error) {
+      console.error("Seed error:", error);
+      res.status(500).json({ error: "Failed to seed data" });
     }
   });
 

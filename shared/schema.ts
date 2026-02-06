@@ -243,3 +243,77 @@ export const insertPrintingProjectSchema = createInsertSchema(printingProjects).
 
 export type InsertPrintingProject = z.infer<typeof insertPrintingProjectSchema>;
 export type PrintingProject = typeof printingProjects.$inferSelect;
+
+// Portfolio Projects
+export const projects = pgTable("projects", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  slug: varchar("slug").unique().notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  status: varchar("status").$type<"Active" | "Development" | "Research" | "Completed">().default("Active"),
+  tags: text("tags").array().notNull(),
+  icon: varchar("icon").notNull(),
+  url: text("url"),
+  internalPath: text("internal_path"),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertProjectSchema = createInsertSchema(projects).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  title: z.string().min(2, "Title is required"),
+  description: z.string().min(10, "Description is required"),
+  slug: z.string().min(2, "Slug is required"),
+  tags: z.array(z.string()).min(1, "At least one tag is required"),
+});
+
+export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type Project = typeof projects.$inferSelect;
+
+// Case Studies (linked to projects)
+export const caseStudies = pgTable("case_studies", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull(),
+  deliverables: text("deliverables").array().notNull(),
+  tools: text("tools").array().notNull(),
+  closing: text("closing").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertCaseStudySchema = createInsertSchema(caseStudies).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  deliverables: z.array(z.string()).min(1, "At least one deliverable is required"),
+  tools: z.array(z.string()).min(1, "At least one tool is required"),
+  closing: z.string().min(5, "Closing statement is required"),
+});
+
+export type InsertCaseStudy = z.infer<typeof insertCaseStudySchema>;
+export type CaseStudy = typeof caseStudies.$inferSelect;
+
+// Services
+export const services = pgTable("services", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  icon: varchar("icon").notNull(),
+  features: text("features").array().notNull(),
+  highlight: boolean("highlight").default(false),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertServiceSchema = createInsertSchema(services).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  title: z.string().min(2, "Title is required"),
+  description: z.string().min(10, "Description is required"),
+  features: z.array(z.string()).min(1, "At least one feature is required"),
+});
+
+export type InsertService = z.infer<typeof insertServiceSchema>;
+export type Service = typeof services.$inferSelect;

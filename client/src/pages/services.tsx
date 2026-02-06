@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import {
   Brain,
   Code,
@@ -18,88 +19,13 @@ import {
   Zap,
   ArrowRight,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
+import type { Service } from "@shared/schema";
 
-const services = [
-  {
-    icon: Brain,
-    title: "AI & Machine Learning Solutions",
-    description: "Custom AI-driven applications, ML model deployment, and intelligent automation systems tailored to your business needs.",
-    features: [
-      "Custom AI Assistant Development",
-      "ML Model Integration & Deployment",
-      "AI Governance & Compliance",
-      "Natural Language Processing",
-      "Predictive Analytics",
-    ],
-    highlight: true,
-  },
-  {
-    icon: Code,
-    title: "Full-Stack Development",
-    description: "End-to-end web application development using modern technologies and best practices for scalable, maintainable solutions.",
-    features: [
-      "React & TypeScript Applications",
-      "Node.js Backend Development",
-      "RESTful API Design",
-      "Database Architecture",
-      "Cloud Deployment",
-    ],
-    highlight: false,
-  },
-  {
-    icon: Server,
-    title: "Enterprise Systems Integration",
-    description: "Seamless integration of enterprise platforms like PeopleSoft with modern technologies and automation workflows.",
-    features: [
-      "PeopleSoft HCM Optimization",
-      "Active Directory Integration",
-      "Payroll System Modernization",
-      "MFA Implementation",
-      "Legacy System Upgrades",
-    ],
-    highlight: false,
-  },
-  {
-    icon: Database,
-    title: "Database Solutions",
-    description: "Expert database design, optimization, and management for Oracle and SQL Server enterprise environments.",
-    features: [
-      "Oracle & SQL Server Expertise",
-      "Data Modeling & Architecture",
-      "Performance Optimization",
-      "Data Migration Services",
-      "Enterprise Data Workflows",
-    ],
-    highlight: false,
-  },
-  {
-    icon: Cloud,
-    title: "Cloud Architecture",
-    description: "Design and implementation of cloud-native solutions with focus on scalability, security, and cost efficiency.",
-    features: [
-      "Cloud Migration Strategy",
-      "Infrastructure as Code",
-      "Containerization (Docker/K8s)",
-      "Serverless Architecture",
-      "Multi-Cloud Solutions",
-    ],
-    highlight: false,
-  },
-  {
-    icon: Shield,
-    title: "Security & Compliance",
-    description: "Comprehensive security solutions ensuring your systems meet industry standards and regulatory requirements.",
-    features: [
-      "Security Audits & Assessment",
-      "Compliance Automation",
-      "Identity & Access Management",
-      "Risk Monitoring",
-      "Governance Frameworks",
-    ],
-    highlight: false,
-  },
-];
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Brain, Code, Database, Server, Shield, Cloud, Cpu, Bot, Workflow, LineChart, Lock, Zap,
+};
 
 const processSteps = [
   {
@@ -125,6 +51,10 @@ const processSteps = [
 ];
 
 export default function Services() {
+  const { data: services = [], isLoading } = useQuery<Service[]>({
+    queryKey: ['/api/services'],
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -146,53 +76,66 @@ export default function Services() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {services.map((service, index) => (
-                <Card 
-                  key={index}
-                  className={`bg-card/80 border-primary/20 hover-elevate transition-all ${
-                    service.highlight ? "ring-1 ring-primary/50" : ""
-                  }`}
-                  style={{ 
-                    boxShadow: service.highlight 
-                      ? "0 0 30px hsl(187 100% 50% / 0.15)" 
-                      : "0 0 20px hsl(187 100% 50% / 0.05)" 
-                  }}
-                  data-testid={`card-service-${index}`}
-                >
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div 
-                        className="w-12 h-12 rounded-md flex items-center justify-center shrink-0"
-                        style={{ 
-                          background: "hsl(187 100% 50% / 0.1)", 
-                          border: "1px solid hsl(187 100% 50% / 0.3)" 
-                        }}
-                      >
-                        <service.icon className="w-6 h-6 text-primary" />
-                      </div>
-                      {service.highlight && (
-                        <Badge className="bg-primary/20 text-primary border-primary/50">
-                          Featured
-                        </Badge>
-                      )}
-                    </div>
-                    <h3 className="font-heading font-semibold text-lg mt-4">{service.title}</h3>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <p className="text-sm text-muted-foreground mb-4">{service.description}</p>
-                    <ul className="space-y-2">
-                      {service.features.map((feature, i) => (
-                        <li key={i} className="flex items-center gap-2 text-sm">
-                          <CheckCircle className="w-4 h-4 text-primary shrink-0" />
-                          <span className="text-muted-foreground">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : services.length === 0 ? (
+              <div className="text-center py-20 text-muted-foreground">
+                No services found.
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {services.map((service) => {
+                  const IconComponent = iconMap[service.icon] || Zap;
+                  return (
+                    <Card 
+                      key={service.id}
+                      className={`bg-card/80 border-primary/20 hover-elevate transition-all ${
+                        service.highlight ? "ring-1 ring-primary/50" : ""
+                      }`}
+                      style={{ 
+                        boxShadow: service.highlight 
+                          ? "0 0 30px hsl(187 100% 50% / 0.15)" 
+                          : "0 0 20px hsl(187 100% 50% / 0.05)" 
+                      }}
+                      data-testid={`card-service-${service.id}`}
+                    >
+                      <CardHeader className="pb-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div 
+                            className="w-12 h-12 rounded-md flex items-center justify-center shrink-0"
+                            style={{ 
+                              background: "hsl(187 100% 50% / 0.1)", 
+                              border: "1px solid hsl(187 100% 50% / 0.3)" 
+                            }}
+                          >
+                            <IconComponent className="w-6 h-6 text-primary" />
+                          </div>
+                          {service.highlight && (
+                            <Badge className="bg-primary/20 text-primary border-primary/50">
+                              Featured
+                            </Badge>
+                          )}
+                        </div>
+                        <h3 className="font-heading font-semibold text-lg mt-4">{service.title}</h3>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-sm text-muted-foreground mb-4">{service.description}</p>
+                        <ul className="space-y-2">
+                          {service.features.map((feature, i) => (
+                            <li key={i} className="flex items-center gap-2 text-sm">
+                              <CheckCircle className="w-4 h-4 text-primary shrink-0" />
+                              <span className="text-muted-foreground">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
 
