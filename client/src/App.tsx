@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -20,10 +20,18 @@ import FeatureVoiceControl from "@/pages/feature-voice-control";
 import ProjectHolofans from "@/pages/project-holofans";
 import ProjectErpDashboard from "@/pages/project-erp-dashboard";
 import PixelArcArchive from "@/pages/pixelarc-archive";
+import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin-dashboard";
+import AdminProjects from "@/pages/admin-projects";
+import AdminModules from "@/pages/admin-modules";
+import AdminSettings from "@/pages/admin-settings";
 import Labs from "@/pages/labs";
 import { LabKieranCore, LabSentinel, LabMnemosyne, LabAether, LabEthica } from "@/pages/lab-system-brief";
 import NotFound from "@/pages/not-found";
+
+function AdminRedirect() {
+  return <Redirect to="/admin/dashboard" />;
+}
 
 function Router() {
   return (
@@ -44,7 +52,12 @@ function Router() {
       <Route path="/projects/holofans" component={ProjectHolofans} />
       <Route path="/projects/holofans/archive" component={PixelArcArchive} />
       <Route path="/projects/erp-dashboard" component={ProjectErpDashboard} />
-      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/dashboard" component={AdminDashboard} />
+      <Route path="/admin/projects" component={AdminProjects} />
+      <Route path="/admin/modules" component={AdminModules} />
+      <Route path="/admin/settings" component={AdminSettings} />
+      <Route path="/admin" component={AdminRedirect} />
       <Route path="/labs" component={Labs} />
       <Route path="/labs/kieran-core" component={LabKieranCore} />
       <Route path="/labs/sentinel" component={LabSentinel} />

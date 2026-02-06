@@ -159,6 +159,68 @@ export async function registerRoutes(
   
   await setupAuth(app);
 
+  app.post("/api/admin/login", (req: any, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      console.log(`[Admin Auth] Login attempt with missing credentials from ${req.ip}`);
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminEmail || !adminPassword) {
+      console.error("[Admin Auth] ADMIN_EMAIL or ADMIN_PASSWORD not configured");
+      return res.status(500).json({ error: "Admin authentication not configured" });
+    }
+
+    if (email !== adminEmail || password !== adminPassword) {
+      console.log(`[Admin Auth] Failed login attempt for email: ${email} from ${req.ip}`);
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    req.session.adminAuthenticated = true;
+    req.session.adminEmail = email;
+    req.session.save((err: any) => {
+      if (err) {
+        console.error("[Admin Auth] Session save error:", err);
+        return res.status(500).json({ error: "Failed to create session" });
+      }
+      console.log(`[Admin Auth] Successful login for ${email} from ${req.ip}`);
+      res.json({ success: true, email });
+    });
+  });
+
+  app.get("/api/admin/session", (req: any, res) => {
+    if (req.session?.adminAuthenticated) {
+      return res.json({ authenticated: true, email: req.session.adminEmail });
+    }
+
+    const user = req.user as any;
+    if (req.isAuthenticated?.() && user?.claims?.email) {
+      const adminEmail = process.env.ADMIN_EMAIL;
+      if (adminEmail && user.claims.email === adminEmail) {
+        return res.json({ authenticated: true, email: user.claims.email });
+      }
+    }
+
+    res.json({ authenticated: false });
+  });
+
+  app.post("/api/admin/logout", (req: any, res) => {
+    const email = req.session?.adminEmail || "unknown";
+    req.session.adminAuthenticated = false;
+    req.session.adminEmail = null;
+    req.session.save((err: any) => {
+      if (err) {
+        console.error("[Admin Auth] Logout session save error:", err);
+      }
+      console.log(`[Admin Auth] Logout for ${email} from ${req.ip}`);
+      res.json({ success: true });
+    });
+  });
+
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

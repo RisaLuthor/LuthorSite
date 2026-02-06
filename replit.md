@@ -38,9 +38,21 @@ Preferred communication style: Simple, everyday language.
 **Server Framework**: Express.js running on Node.js with TypeScript.
 
 **API Design**: RESTful API with JSON responses:
+
+Admin Auth:
+- POST /api/admin/login - Authenticate with email/password (sets session)
+- GET /api/admin/session - Check admin session status
+- POST /api/admin/logout - End admin session
+
+Public User Auth:
 - GET /api/auth/user - Get current authenticated user
 - GET /api/auth/is-admin - Check admin status (server-side ADMIN_EMAIL verification)
 - PATCH /api/auth/user/type - Update user's account type (personal/enterprise)
+- GET /api/login - Initiate Replit OAuth flow
+- GET /api/callback - Handle OAuth callback
+- GET /api/logout - End user session
+
+Content (public read, admin write):
 - GET /api/projects - List all projects with attached case studies (public)
 - GET /api/projects/:slug - Get single project by slug (public)
 - POST /api/projects - Create project (admin)
@@ -61,9 +73,6 @@ Preferred communication style: Simple, everyday language.
 - GET /api/holograms/user - Get user's hologram uploads
 - GET /api/holograms/download/:id - Download generated hologram
 - POST /api/seed - Seed initial data (admin)
-- GET /api/login - Initiate Replit OAuth flow
-- GET /api/callback - Handle OAuth callback
-- GET /api/logout - End user session
 
 **Storage Layer**: DatabaseStorage class with Drizzle ORM backed by Neon PostgreSQL (using HTTP adapter for reliability). Implements IStorage interface for user management, chat messages, contact submissions, portfolio projects, services, and case studies.
 
@@ -100,7 +109,15 @@ Preferred communication style: Simple, everyday language.
 
 ### Authentication & Authorization
 
-**Authentication**: Replit Auth integration using OpenID Connect (OIDC):
+**Admin Authentication**: Dedicated admin login system:
+- POST /api/admin/login validates email/password against ADMIN_EMAIL and ADMIN_PASSWORD env vars
+- Sets `adminAuthenticated` flag in PostgreSQL-backed session
+- GET /api/admin/session checks admin session status
+- POST /api/admin/logout clears admin session
+- All auth events logged to server console with IP addresses
+- Admin routes: /admin/login, /admin/dashboard, /admin/projects, /admin/modules, /admin/settings
+
+**Public User Authentication**: Replit Auth integration using OpenID Connect (OIDC):
 - OAuth flow via /api/login, /api/callback, /api/logout endpoints
 - Session management with PostgreSQL-backed session store (connect-pg-simple)
 - JWT token handling with automatic refresh
@@ -110,7 +127,10 @@ Preferred communication style: Simple, everyday language.
 - Personal: Friendly, casual conversation style for individuals
 - Enterprise: Professional, technical responses for business users
 
-**Authorization**: Protected routes use isAuthenticated middleware that validates session and refreshes tokens as needed.
+**Authorization**: The `isAdmin` middleware supports dual authentication:
+1. Admin session-based auth (via /api/admin/login)
+2. Replit Auth with ADMIN_EMAIL match (backward compatible)
+Protected routes use isAuthenticated middleware that validates session and refreshes tokens as needed.
 
 ### Styling & Theme System
 

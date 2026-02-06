@@ -9,7 +9,7 @@ A futuristic personal portfolio and AI ecosystem website featuring a custom cybe
 - **Frontend**: React 18 + TypeScript + Vite
 - **Backend**: Express.js + TypeScript
 - **Database**: PostgreSQL (Neon) with Drizzle ORM
-- **Auth**: Replit Auth (OpenID Connect)
+- **Auth**: Session-based admin auth + Replit Auth (OpenID Connect) for public users
 - **Styling**: Tailwind CSS + shadcn/ui + Radix UI
 
 ### Data Flow
@@ -25,20 +25,65 @@ All content (projects, services, blog updates, 3D printing projects) is stored i
 ```
 client/
   src/
-    pages/          # Route pages (Home, Projects, Services, Blog, Admin, etc.)
-    components/     # Reusable UI components (Navigation, Footer, Chat, etc.)
-    hooks/          # Custom React hooks (useAuth, useToast, useMobile)
-    lib/            # Utility functions (queryClient, utils)
+    pages/
+      admin-login.tsx       # Admin login form
+      admin-dashboard.tsx    # Admin dashboard overview
+      admin-projects.tsx     # Portfolio & case study management
+      admin-modules.tsx      # Content modules (updates, printing, services)
+      admin-settings.tsx     # System settings & configuration
+      ...                    # Public pages (Home, Projects, Services, etc.)
+    components/
+      admin-layout.tsx       # Shared admin layout with sidebar & auth guard
+      navigation.tsx         # Public site navigation
+      ...                    # Reusable UI components
+    hooks/
+      useAdminAuth.ts        # Admin session management hook
+      useAuth.ts             # Public user auth hook
+      ...
+    lib/
+      queryClient.ts         # TanStack Query client configuration
 server/
-  routes.ts         # Express API route definitions
+  routes.ts         # Express API route definitions (includes admin auth endpoints)
   storage.ts        # Database storage layer (IStorage interface + DatabaseStorage)
-  replitAuth.ts     # Authentication middleware
+  replitAuth.ts     # Authentication middleware (isAdmin supports both auth methods)
   googleCalendar.ts # Google Calendar integration
   index.ts          # Server entry point
   vite.ts           # Vite dev server middleware
 shared/
   schema.ts         # Drizzle ORM schema + Zod validation + TypeScript types
 ```
+
+## Admin Control Plane
+
+### Admin Login Flow
+
+1. User navigates to `/admin/login`
+2. Enters email and password
+3. Backend validates credentials against `ADMIN_EMAIL` and `ADMIN_PASSWORD` environment variables
+4. On success, sets `adminAuthenticated` flag in the server-side session (PostgreSQL-backed)
+5. User is redirected to `/admin/dashboard`
+6. Session persists across page refreshes via httpOnly cookie
+7. Logout clears the session flag and redirects to `/admin/login`
+
+### Route Structure
+
+| Route | Access | Description |
+|-------|--------|-------------|
+| `/admin/login` | Public | Admin login form |
+| `/admin/dashboard` | Protected | Overview with analytics, schedule, quick actions |
+| `/admin/projects` | Protected | Portfolio management (projects + case studies) |
+| `/admin/modules` | Protected | Content modules (work updates, 3D printing, services) |
+| `/admin/settings` | Protected | System configuration and security status |
+| `/admin` | Redirect | Redirects to `/admin/dashboard` |
+
+### Security Model
+
+- **Server-side session authentication**: Credentials validated against environment variables on the backend
+- **Session storage**: PostgreSQL-backed sessions via `connect-pg-simple` with 1-week TTL
+- **httpOnly cookies**: Session cookie is httpOnly and secure, preventing XSS attacks
+- **Dual auth support**: The `isAdmin` middleware accepts both admin session auth and Replit Auth (OIDC) with admin email match
+- **Auth event logging**: All login attempts (success/failure) and logouts are logged to the server console with IP addresses
+- **No hardcoded credentials**: All secrets stored in environment variables
 
 ### Database Schema
 
@@ -59,6 +104,11 @@ shared/
 
 ### API Endpoints
 
+#### Admin Auth Endpoints
+- `POST /api/admin/login` - Authenticate with email/password
+- `GET /api/admin/session` - Check admin session status
+- `POST /api/admin/logout` - End admin session
+
 #### Public Endpoints
 - `GET /api/projects` - List all projects with case studies
 - `GET /api/projects/:slug` - Get single project by slug
@@ -68,7 +118,7 @@ shared/
 - `POST /api/contact` - Submit contact form
 - `POST /api/chat/messages` - Send chat message (AI response)
 
-#### Admin Endpoints (require authentication + admin email match)
+#### Admin Endpoints (require admin session or Replit Auth admin)
 - `POST /api/projects` - Create project
 - `PATCH /api/projects/:id` - Update project
 - `DELETE /api/projects/:id` - Delete project
@@ -82,17 +132,15 @@ shared/
 - `DELETE /api/blog/updates/:id` - Delete work update
 - `POST /api/seed` - Seed initial data
 
-### Authentication
-
-Uses Replit Auth (OpenID Connect) with session-based authentication backed by PostgreSQL. Admin access is determined by matching the authenticated user's email against the `ADMIN_EMAIL` environment variable.
-
 ### Environment Variables
 
 | Variable | Purpose |
 |----------|---------|
 | `DATABASE_URL` | PostgreSQL connection string |
 | `SESSION_SECRET` | Express session secret |
-| `ADMIN_EMAIL` | Admin user email for dashboard access |
+| `ADMIN_EMAIL` | Admin user email for login |
+| `ADMIN_PASSWORD` | Admin user password for login |
+| `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` | PostgreSQL connection details |
 
 ### Running Locally
 
@@ -101,6 +149,10 @@ npm install
 npm run db:push    # Push schema to database
 npm run dev        # Start development server on port 5000
 ```
+
+### Production
+
+The application uses Replit's built-in deployment. Admin routes are server-side protected and inaccessible without valid credentials.
 
 ### Database Migrations
 
