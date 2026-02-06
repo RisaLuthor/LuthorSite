@@ -9,8 +9,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, LogIn, LogOut, User, Building2 } from "lucide-react";
+import { Menu, X, LogIn, LogOut, User, Building2, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -31,6 +32,13 @@ export function Navigation() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isAuthenticated, isLoading } = useAuth();
+
+  const { data: adminData } = useQuery<{ isAdmin: boolean }>({
+    queryKey: ["/api/auth/is-admin"],
+    enabled: isAuthenticated,
+    retry: false,
+  });
+  const isAdmin = adminData?.isAdmin ?? false;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
@@ -116,6 +124,16 @@ export function Navigation() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin/dashboard">
+                        <span className="flex items-center gap-2 cursor-pointer" data-testid="link-admin-dashboard">
+                          <LayoutDashboard className="w-4 h-4" />
+                          Dashboard
+                        </span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <a
                       href="/api/logout"
@@ -186,20 +204,35 @@ export function Navigation() {
                       {user.firstName?.[0] || user.email?.[0]?.toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <a
-                    href="/api/logout"
-                    className="flex-1"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Button
-                      variant="outline"
-                      className="w-full font-heading tracking-wide border-primary/50 text-primary"
-                      data-testid="button-mobile-logout"
+                  <div className="flex-1 flex gap-2">
+                    {isAdmin && (
+                      <Link href="/admin/dashboard" className="flex-1">
+                        <Button
+                          variant="outline"
+                          className="w-full font-heading tracking-wide border-primary/50 text-primary"
+                          onClick={() => setMobileMenuOpen(false)}
+                          data-testid="button-mobile-dashboard"
+                        >
+                          <LayoutDashboard className="w-4 h-4 mr-2" />
+                          Dashboard
+                        </Button>
+                      </Link>
+                    )}
+                    <a
+                      href="/api/logout"
+                      className="flex-1"
+                      onClick={() => setMobileMenuOpen(false)}
                     >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Log out
-                    </Button>
-                  </a>
+                      <Button
+                        variant="outline"
+                        className="w-full font-heading tracking-wide border-primary/50 text-primary"
+                        data-testid="button-mobile-logout"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Log out
+                      </Button>
+                    </a>
+                  </div>
                 </div>
               ) : (
                 <Link href="/login" className="flex-1">
